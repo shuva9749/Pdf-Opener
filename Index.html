@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Super Advanced PDF Viewer to open PDFs from My Device, Google Drive, Dropbox, OneDrive. SEO optimized with AdSense support." />
+  <title>Super Advanced PDF Viewer</title>
+  
+  <!-- SEO -->
+  <meta name="keywords" content="PDF Viewer, Online PDF Reader, Google Drive PDF, OneDrive PDF, Dropbox PDF">
+  <meta name="author" content="Your Name">
+
+  <!-- Google API -->
+  <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
+
+  <!-- Styling -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f0f4f8;
+      color: #333;
+    }
+
+    header {
+      background: #4a90e2;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    .buttons {
+      text-align: center;
+      margin: 20px;
+    }
+
+    .buttons button, .buttons input[type="file"] {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background: #4a90e2;
+      color: white;
+      cursor: pointer;
+    }
+
+    .buttons input[type="file"] {
+      background: #7b68ee;
+    }
+
+    iframe {
+      width: 100%;
+      height: 80vh;
+      border: none;
+    }
+
+    .ad-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <header>Super Advanced PDF Viewer</header>
+
+  <div class="buttons">
+    <input type="file" id="pdfInput" accept="application/pdf" />
+    <button onclick="loadPicker()">Open from Google Drive</button>
+  </div>
+
+  <iframe id="pdfViewer" src=""></iframe>
+
+  <div class="ad-container">
+    <!-- Replace with your AdSense Publisher ID -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
+         data-ad-slot="1234567890"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </div>
+
+  <script>
+    let oauthToken;
+
+    function loadPicker() {
+      gapi.load('auth', { 'callback': onAuthApiLoad });
+      gapi.load('picker');
+    }
+
+    function onAuthApiLoad() {
+      gapi.auth.authorize({
+        client_id: '705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com',
+        scope: ['https://www.googleapis.com/auth/drive.readonly'],
+        immediate: false
+      }, function (authResult) {
+        if (authResult && !authResult.error) {
+          oauthToken = authResult.access_token;
+          createPicker();
+        }
+      });
+    }
+
+    function createPicker() {
+      if (oauthToken) {
+        const picker = new google.picker.PickerBuilder()
+          .addView(google.picker.ViewId.DOCS)
+          .setOAuthToken(oauthToken)
+          .setDeveloperKey('AIzaSyAs1-yX51Kd5aKl-mB1oHhKXhOwCUDcPUY')
+          .setCallback(pickerCallback)
+          .build();
+        picker.setVisible(true);
+      }
+    }
+
+    function pickerCallback(data) {
+      if (data.action === google.picker.Action.PICKED) {
+        const fileId = data.docs[0].id;
+        const viewerUrl = `https://drive.google.com/uc?export=preview&id=${fileId}`;
+        document.getElementById('pdfViewer').src = viewerUrl;
+      }
+    }
+
+    document.getElementById('pdfInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && file.type === 'application/pdf') {
+        const fileURL = URL.createObjectURL(file);
+        document.getElementById('pdfViewer').src = fileURL;
+      } else {
+        alert('Please select a valid PDF file.');
+      }
+    });
+  </script>
+</body>
+</html>
