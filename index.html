@@ -1,0 +1,139 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Super Advance PDF Viewer with support for Google Drive, OneDrive, Dropbox, and local file uploads. SEO-optimized and AdSense-ready." />
+  <title>Super Advance PDF Viewer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #4a90e2;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    main {
+      max-width: 1000px;
+      margin: auto;
+      padding: 1rem;
+    }
+    .upload-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .upload-buttons button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #5cb85c;
+      color: white;
+      transition: background-color 0.3s;
+    }
+    .upload-buttons button:hover {
+      background-color: #4cae4c;
+    }
+    iframe {
+      width: 100%;
+      height: 80vh;
+      border: 1px solid #ccc;
+    }
+    .ads {
+      margin: 2rem 0;
+      text-align: center;
+    }
+  </style>
+  <!-- Google AdSense Script -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Super Advance PDF Viewer</h1>
+    <p>View your PDF files from anywhere with ease</p>
+  </header>
+  <main>
+    <div class="upload-buttons">
+      <input type="file" id="pdfInput" accept="application/pdf" hidden />
+      <button onclick="document.getElementById('pdfInput').click()">
+        <i class="fas fa-upload"></i> My Device
+      </button>
+      <button onclick="handleGoogleDrive()">
+        <i class="fab fa-google-drive"></i> Google Drive
+      </button>
+      <button onclick="handleOneDrive()">
+        <i class="fab fa-microsoft"></i> OneDrive
+      </button>
+      <button onclick="handleDropbox()">
+        <i class="fab fa-dropbox"></i> Dropbox
+      </button>
+    </div><!-- Ad Section -->
+<div class="ads">
+  <ins class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+    data-ad-slot="1234567890"
+    data-ad-format="auto"
+    data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+
+<iframe id="pdfViewer" src="" frameborder="0"></iframe>
+
+  </main>  <!-- Google Drive API -->  <script src="https://apis.google.com/js/api.js"></script>  <script>
+    const pdfViewer = document.getElementById('pdfViewer');
+
+    document.getElementById('pdfInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && file.type === 'application/pdf') {
+        const fileURL = URL.createObjectURL(file);
+        pdfViewer.src = fileURL;
+      }
+    });
+
+    function handleGoogleDrive() {
+      gapi.load('client:auth2', () => {
+        gapi.client.init({
+          apiKey: 'AIzaSyAs1-yX51Kd5aKl-mB1oHhKXhOwCUDcPUY',
+          clientId: '705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com',
+          scope: 'https://www.googleapis.com/auth/drive.readonly'
+        }).then(() => {
+          return gapi.auth2.getAuthInstance().signIn();
+        }).then(() => {
+          gapi.client.drive.files.list({
+            q: "mimeType='application/pdf'",
+            pageSize: 10,
+            fields: 'files(id, name)'
+          }).then(response => {
+            const files = response.result.files;
+            if (files.length > 0) {
+              const fileId = files[0].id;
+              pdfViewer.src = `https://drive.google.com/file/d/${fileId}/preview`;
+            } else {
+              alert('No PDF files found.');
+            }
+          });
+        });
+      });
+    }
+
+    function handleOneDrive() {
+      alert('OneDrive integration will be implemented soon.');
+    }
+
+    function handleDropbox() {
+      alert('Dropbox integration will be implemented soon.');
+    }
+  </script></body>
+</html>
