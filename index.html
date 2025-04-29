@@ -91,7 +91,7 @@
 
 <iframe id="pdfViewer" src="" frameborder="0"></iframe>
 
-  </main>  <!-- Google Drive API -->  <script src="https://apis.google.com/js/api.js"></script>  <script>
+  </main>  <!-- Google APIs -->  <script src="https://apis.google.com/js/api.js"></script>  <script src="https://apis.google.com/js/client.js?onload=initPicker"></script>  <script>
     const pdfViewer = document.getElementById('pdfViewer');
 
     document.getElementById('pdfInput').addEventListener('change', (e) => {
@@ -102,30 +102,52 @@
       }
     });
 
+    let oauthToken;
+
+    function initPicker() {
+      gapi.load('auth', {'callback': onAuthApiLoad});
+      gapi.load('picker');
+    }
+
+    function onAuthApiLoad() {
+      gapi.auth.authorize(
+        {
+          'client_id': '705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com',
+          'scope': ['https://www.googleapis.com/auth/drive.readonly'],
+          'immediate': false
+        },
+        handleAuthResult);
+    }
+
+    function handleAuthResult(authResult) {
+      if (authResult && !authResult.error) {
+        oauthToken = authResult.access_token;
+        createPicker();
+      }
+    }
+
+    function createPicker() {
+      if (oauthToken) {
+        const picker = new google.picker.PickerBuilder()
+          .addView(google.picker.ViewId.DOCS)
+          .setOAuthToken(oauthToken)
+          .setDeveloperKey('AIzaSyAs1-yX51Kd5aKl-mB1oHhKXhOwCUDcPUY')
+          .setCallback(pickerCallback)
+          .build();
+        picker.setVisible(true);
+      }
+    }
+
+    function pickerCallback(data) {
+      if (data.action === google.picker.Action.PICKED) {
+        const fileId = data.docs[0].id;
+        const url = `https://drive.google.com/file/d/${fileId}/preview`;
+        pdfViewer.src = url;
+      }
+    }
+
     function handleGoogleDrive() {
-      gapi.load('client:auth2', () => {
-        gapi.client.init({
-          apiKey: 'AIzaSyAs1-yX51Kd5aKl-mB1oHhKXhOwCUDcPUY',
-          clientId: '705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com',
-          scope: 'https://www.googleapis.com/auth/drive.readonly'
-        }).then(() => {
-          return gapi.auth2.getAuthInstance().signIn();
-        }).then(() => {
-          gapi.client.drive.files.list({
-            q: "mimeType='application/pdf'",
-            pageSize: 10,
-            fields: 'files(id, name)'
-          }).then(response => {
-            const files = response.result.files;
-            if (files.length > 0) {
-              const fileId = files[0].id;
-              pdfViewer.src = `https://drive.google.com/file/d/${fileId}/preview`;
-            } else {
-              alert('No PDF files found.');
-            }
-          });
-        });
-      });
+      initPicker();
     }
 
     function handleOneDrive() {
