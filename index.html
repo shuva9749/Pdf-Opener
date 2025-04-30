@@ -1,144 +1,514 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="View PDF files from My Device or Google Drive in a beautiful viewer. SEO optimized with Google AdSense support." />
-  <meta name="keywords" content="PDF viewer, open PDF online, Google Drive PDF viewer, file viewer" />
-  <meta name="author" content="Shuva9749" />
-  <title>Super Advanced PDF Viewer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Google API -->
-  <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
+    <!-- SEO Meta Tags -->
+    <title>Super Advanced PDF Viewer | View & Manage PDFs Online</title>
+    <meta name="description" content="View PDF files instantly from your device, Google Drive, OneDrive, or Dropbox. A fast, beautiful, and user-friendly online PDF reader.">
+    <meta name="keywords" content="pdf viewer, online pdf reader, view pdf, pdf document, google drive pdf, dropbox pdf, onedrive pdf, free pdf viewer">
+    <meta name="author" content="Your Name or Company"> <!-- CHANGE THIS -->
 
-  <!-- Styling -->
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f7fa;
-      margin: 0;
-      padding: 0;
-    }
+    <!-- Favicon (Optional but Recommended) -->
+    <!-- <link rel="icon" href="favicon.ico" type="image/x-icon"> --> <!-- Create a favicon.ico -->
 
-    header {
-      background-color: #0073e6;
-      color: white;
-      padding: 20px;
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: bold;
-    }
+    <!-- Google Fonts (Example: Roboto) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 
-    .container {
-      text-align: center;
-      margin: 20px;
-    }
+    <!-- Font Awesome for Icons (Optional but nice) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    button, input[type="file"] {
-      margin: 10px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      background-color: #0073e6;
-      color: white;
-      cursor: pointer;
-    }
+    <!-- PDF.js Library (Use CDN for simplicity, consider self-hosting for production) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" integrity="sha512-Tdh5OqBGVOQw6+U3qCeHkcmvrfxG46+wLiyT/wHk7099JdPM5LSzc72LdJR79Jg5+Rj8a3W/G5+2SjUsToLQpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        // Required worker source for PDF.js
+        // Ensure this runs *before* any pdfjsLib usage in your main script
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        } else {
+            console.error("PDF.js library not loaded correctly.");
+        }
+    </script>
 
-    iframe {
-      width: 90%;
-      height: 80vh;
-      display: block;
-      margin: 0 auto;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      background: white;
-    }
+    <!-- Embedded Styles -->
+    <style>
+        /* --- Basic Reset & Defaults --- */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    .ads {
-      text-align: center;
-      margin: 20px 0;
-    }
-  </style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            background-color: #f4f7f6; /* Light background */
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- Layout --- */
+        .container {
+            display: flex;
+            flex-grow: 1;
+            padding: 20px;
+            gap: 20px;
+            max-width: 1600px; /* Limit max width */
+            margin: 0 auto; /* Center container */
+            width: 100%;
+        }
+
+        .content-area {
+            flex: 3; /* Main content takes more space */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar {
+            flex: 1; /* Sidebars take less space */
+            display: none; /* Hide sidebars by default on smaller screens */
+        }
+
+        /* Show sidebars on wider screens */
+        @media (min-width: 1024px) {
+            .sidebar {
+                display: block;
+            }
+        }
+
+
+        /* --- Header & Footer --- */
+        .main-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); /* Attractive gradient */
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-header h1 {
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        .main-header h1 i {
+            margin-right: 10px;
+        }
+
+        .main-header p {
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        .main-footer {
+            background-color: #343a40;
+            color: #adb5bd;
+            text-align: center;
+            padding: 15px 20px;
+            margin-top: auto; /* Pushes footer to bottom */
+            font-size: 0.9em;
+        }
+
+        /* --- Utility --- */
+        .card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background-color: #007bff;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .btn:active {
+            transform: translateY(1px);
+        }
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* --- File Selector --- */
+        .file-selector-panel h2 {
+            margin-bottom: 20px;
+            color: #0056b3;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .file-selector-panel h2 i {
+            margin-right: 8px;
+        }
+
+        .source-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center; /* Center buttons */
+        }
+
+        .btn-source {
+            flex-grow: 1; /* Allow buttons to grow */
+            min-width: 150px; /* Minimum width */
+            text-align: center;
+            justify-content: center; /* Center icon and text */
+        }
+        .btn-source i {
+            font-size: 1.2em;
+        }
+        .btn-google { background-color: #db4437; }
+        .btn-onedrive { background-color: #0078d4; }
+        .btn-dropbox { background-color: #0061ff; }
+
+        .status-message {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+
+        /* --- PDF Viewer --- */
+        .pdf-viewer-panel {
+            background-color: #e9ecef; /* Slightly different background for viewer area */
+        }
+
+        .pdf-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+            flex-wrap: wrap; /* Allow controls to wrap on small screens */
+        }
+
+        .pdf-controls .btn {
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+        .btn-nav { background-color: #6c757d; }
+        .btn-zoom { background-color: #28a745; }
+
+        #pageIndicator, #zoomLevel {
+            font-weight: bold;
+            color: #495057;
+            margin: 0 10px;
+        }
+
+        #pdf-render-area {
+            padding: 20px;
+            overflow: auto; /* Add scrollbars if canvas is larger */
+            display: flex;
+            justify-content: center; /* Center canvas */
+            align-items: flex-start; /* Align canvas to top */
+            position: relative; /* For loading indicator positioning */
+            min-height: 400px; /* Ensure some minimum height */
+        }
+
+        #pdf-canvas {
+            border: 1px solid #ced4da;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 100%; /* Ensure canvas is responsive */
+            height: auto; /* Maintain aspect ratio */
+        }
+
+        /* --- Loading & Error States --- */
+        .loading, .error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            z-index: 10;
+        }
+        .loading i {
+            font-size: 2em;
+            color: #007bff;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+            border: 1px solid #dc3545;
+        }
+        #loading-indicator {
+            display: none; /* Hidden by default */
+        }
+
+        /* --- Advertisements --- */
+        .ad-space {
+            border: 1px dashed #cccccc;
+            background-color: #f9f9f9;
+            min-height: 100px; /* Example minimum height */
+            display: flex;
+            flex-direction: column; /* Stack title and ad */
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+            padding: 15px; /* Add padding inside ad space */
+        }
+        .ad-space h2 {
+            font-size: 1em;
+            color: #aaa;
+            margin-bottom: 10px; /* Space between title and ad placeholder/content */
+        }
+
+        .ad-space-sidebar {
+            min-height: 250px; /* Taller for sidebar */
+            margin-bottom: 20px; /* Space between multiple sidebar ads if needed */
+        }
+        .ad-space-bottom {
+            min-height: 90px; /* Shorter for bottom banner */
+        }
+
+        .ad-placeholder {
+            font-style: italic;
+        }
+
+        /* --- Responsiveness --- */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 10px;
+            }
+
+            .sidebar {
+                display: none; /* Ensure sidebars are hidden on mobile */
+                width: 100%;
+                flex: none;
+            }
+             /* Optionally show ads at top/bottom on mobile */
+            .ad-sidebar-left, .ad-sidebar-right {
+                 display: none; /* Keep sidebars hidden or re-purpose as top/bottom ads */
+            }
+            .ad-space-bottom {
+                order: 3; /* Ensure bottom ad stays at bottom in column layout */
+            }
+
+            .content-area {
+                width: 100%;
+                flex: 1; /* Take available space */
+            }
+
+            .source-buttons {
+                flex-direction: column; /* Stack source buttons */
+            }
+            .btn-source {
+                width: 100%; /* Make buttons full width */
+            }
+
+            .pdf-controls {
+                justify-content: space-around; /* Better spacing on small screens */
+            }
+            .main-header h1 { font-size: 1.5em; }
+            .main-header p { font-size: 0.9em; }
+        }
+    </style>
+
 </head>
 <body>
-  <header>Super Advanced PDF Viewer</header>
 
-  <div class="container">
-    <input type="file" id="pdfInput" accept="application/pdf" />
-    <button onclick="loadPicker()">Open from Google Drive</button>
-  </div>
+    <header class="main-header">
+        <h1><i class="fas fa-file-pdf"></i> Super Advanced PDF Viewer</h1>
+        <p>View PDFs from anywhere, effortlessly.</p>
+    </header>
 
-  <iframe id="pdfViewer" src=""></iframe>
+    <main class="container">
 
-  <div class="ads">
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
-         data-ad-slot="1234567890"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
+        <aside class="sidebar ad-sidebar-left">
+            <h2>Advertisement</h2>
+            <div class="ad-space ad-space-sidebar">
+                <!-- === PASTE YOUR GOOGLE ADSENSE CODE (e.g., Display Ad Unit) HERE === -->
+                <!-- Replace YOUR_AD_CLIENT_ID and YOUR_AD_SLOT_ID -->
+                <!--
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_AD_CLIENT_ID"
+                     crossorigin="anonymous"></script>
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-YOUR_AD_CLIENT_ID"
+                     data-ad-slot="YOUR_AD_SLOT_ID"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+                -->
+                <p class="ad-placeholder">[Adsense Sidebar Ad Placeholder]</p>
+                <!-- === END ADSENSE CODE === -->
+            </div>
+        </aside>
+
+        <section class="content-area">
+            <div id="file-selector" class="file-selector-panel card">
+                <h2><i class="fas fa-folder-open"></i> Select PDF Source</h2>
+                <div class="source-buttons">
+                    <button id="btnDevice" class="btn btn-source">
+                        <i class="fas fa-laptop-file"></i> My Device
+                        <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+                    </button>
+                    <button id="btnGoogleDrive" class="btn btn-source btn-google">
+                        <i class="fab fa-google-drive"></i> Google Drive
+                    </button>
+                    <button id="btnOneDrive" class="btn btn-source btn-onedrive" disabled>
+                        <i class="fab fa-windows"></i> OneDrive <small>(Coming Soon)</small>
+                    </button>
+                    <button id="btnDropbox" class="btn btn-source btn-dropbox" disabled>
+                        <i class="fab fa-dropbox"></i> Dropbox <small>(Coming Soon)</small>
+                    </button>
+                </div>
+                 <div id="google-drive-status" class="status-message" style="display: none;"></div>
+            </div>
+
+            <div id="pdf-viewer-container" class="pdf-viewer-panel card" style="display: none;">
+                <div id="pdf-controls" class="pdf-controls">
+                    <button id="prevPage" class="btn btn-nav"><i class="fas fa-arrow-left"></i> Prev</button>
+                    <span id="pageIndicator">Page <span id="page_num"></span> / <span id="page_count"></span></span>
+                    <button id="nextPage" class="btn btn-nav">Next <i class="fas fa-arrow-right"></i></button>
+                    <button id="zoomOut" class="btn btn-zoom"><i class="fas fa-search-minus"></i></button>
+                    <button id="zoomIn" class="btn btn-zoom"><i class="fas fa-search-plus"></i></button>
+                     <span id="zoomLevel">Zoom: 100%</span>
+                </div>
+                <div id="pdf-render-area">
+                     <canvas id="pdf-canvas"></canvas>
+                     <div id="loading-indicator" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading PDF...
+                     </div>
+                     <div id="error-message" class="error" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="ad-space ad-space-bottom card">
+                 <h2>Advertisement</h2>
+                <!-- === PASTE YOUR GOOGLE ADSENSE CODE (e.g., Horizontal Ad Unit) HERE === -->
+                <!-- Replace YOUR_AD_CLIENT_ID and YOUR_AD_SLOT_ID -->
+                 <!--
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_AD_CLIENT_ID"
+                     crossorigin="anonymous"></script>
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-YOUR_AD_CLIENT_ID"
+                     data-ad-slot="YOUR_AD_SLOT_ID"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+                -->
+                <p class="ad-placeholder">[Adsense Bottom Ad Placeholder]</p>
+                <!-- === END ADSENSE CODE === -->
+            </div>
+
+        </section>
+
+         <aside class="sidebar ad-sidebar-right">
+             <h2>Advertisement</h2>
+            <div class="ad-space ad-space-sidebar">
+                <!-- === PASTE YOUR GOOGLE ADSENSE CODE (e.g., Display Ad Unit) HERE === -->
+                <!-- Replace YOUR_AD_CLIENT_ID and YOUR_AD_SLOT_ID -->
+                <!--
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_AD_CLIENT_ID"
+                     crossorigin="anonymous"></script>
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-YOUR_AD_CLIENT_ID"
+                     data-ad-slot="YOUR_AD_SLOT_ID"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+                -->
+                <p class="ad-placeholder">[Adsense Sidebar Ad Placeholder]</p>
+                <!-- === END ADSENSE CODE === -->
+            </div>
+        </aside>
+
+    </main>
+
+    <footer class="main-footer">
+        <p>© <span id="currentYear"></span> Super Advanced PDF Viewer. All rights reserved.</p>
+        <!-- Add links to Privacy Policy, Terms of Service if applicable -->
+    </footer>
+
+    <!-- Google API Client Library -->
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+
+    <!-- Embedded Custom JavaScript -->
     <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-  </div>
+        // Define functions in the global scope or attach to window
+        // if they need to be called by external libraries like gapi.load callback
 
-  <script>
-    // My Device PDF Load
-    document.getElementById('pdfInput').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file && file.type === 'application/pdf') {
-        const fileURL = URL.createObjectURL(file);
-        document.getElementById('pdfViewer').src = fileURL;
-      } else {
-        alert("Please upload a valid PDF file.");
-      }
-    });
+        /**
+         * Initializes the Google API client library.
+         * MUST be globally accessible if used as a callback for gapi.load.
+         */
+        window.initializeGapiClient = function() {
+             // --- Configuration ---
+             // !! SECURITY WARNING: Storing API keys and Client IDs directly in client-side code
+             // !! is generally insecure for public applications. Consider server-side OAuth flows
+             // !! or restricted API keys for production. These are used here for demonstration based on the request.
+            const GOOGLE_API_KEY = "AIzaSyAs1-yX51Kd5aKl-mB1oHhKXhOwCUDcPUY"; // USE YOUR KEY
+            const GOOGLE_CLIENT_ID = "705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com"; // USE YOUR CLIENT ID
+            const GOOGLE_DRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.readonly'; // Read-only access is safer
+            const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest", "https://www.googleapis.com/discovery/v1/apis/picker/v1/rest"];
 
-    // Google Picker
-    let oauthToken;
+             // Get reference to elements needed within this function (e.g., status)
+             const googleDriveStatus = document.getElementById('google-drive-status');
+             const btnGoogleDrive = document.getElementById('btnGoogleDrive');
 
-    function loadPicker() {
-      gapi.load('auth', { 'callback': onAuthApiLoad });
-      gapi.load('picker');
-    }
+            function showStatus(message, isError = false) {
+                if (!googleDriveStatus) return;
+                googleDriveStatus.textContent = message;
+                googleDriveStatus.style.color = isError ? '#dc3545' : '#007bff';
+                googleDriveStatus.style.display = 'block';
+            }
 
-    function onAuthApiLoad() {
-      gapi.auth.authorize({
-        client_id: '705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com',
-        scope: ['https://www.googleapis.com/auth/drive.readonly'],
-        immediate: false
-      }, function (authResult) {
-        if (authResult && !authResult.error) {
-          oauthToken = authResult.access_token;
-          createPicker();
-        } else {
-          alert("Google authorization failed.");
-        }
-      });
-    }
+            gapi.client.init({
+                apiKey: GOOGLE_API_KEY,
+                clientId: GOOGLE_CLIENT_ID,
+                discoveryDocs: DISCOVERY_DOCS,
+                scope: GOOGLE_DRIVE_SCOPES
+            }).then(() => {
+                console.log("Google API Client initialized.");
+                // Access the main app's instance/functions if needed
+                // e.g., window.pdfViewerApp.googleAuthInstance = gapi.auth2.getAuthInstance();
+                const app = window.pdfViewerApp; // Assuming main logic is attached to window.pdfViewerApp
+                if (app) {
+                    app.googleAuthInstance = gapi.auth2.getAuthInstance();
 
-    function createPicker() {
-      if (oauthToken) {
-        const picker = new google.picker.PickerBuilder()
-          .addView(google.picker.ViewId.DOCS)
-          .setOAuthToken(oauthToken)
-          .setDeveloperKey('AIzaSyAs1-yX51Kd5aKl-mB1oHhKXhOwCUDcPUY')
-          .setCallback(pickerCallback)
-          .build();
-        picker.setVisible(true);
-      }
-    }
-
-    function pickerCallback(data) {
-      if (data.action === google.picker.Action.PICKED) {
-        const fileId = data.docs[0].id;
-        const viewerUrl = `https://drive.google.com/uc?export=preview&id=${fileId}`;
-        document.getElementById('pdfViewer').src = viewerUrl;
-      }
-    }
-  </script>
-</body>
-</html>
+                    // Listen for sign-in state changes
+                    app.googleAuthInstance.isSignedIn.listen(app.upda
