@@ -25,11 +25,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" integrity="sha512-Tdh5OqBGVOQw6+U3qCeHkcmvrfxG46+wLiyT/wHk7099JdPM5LSzc72LdJR79Jg5+Rj8a3W/G5+2SjUsToLQpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         // Required worker source for PDF.js
-        // Ensure this runs *before* any pdfjsLib usage in your main script
-        if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-        } else {
-            console.error("PDF.js library not loaded correctly.");
+        // Ensure this runs *after* pdf.min.js is loaded but *before* any pdfjsLib usage in your main script
+        // Note: If pdf.min.js loading fails, pdfjsLib might be undefined here.
+        // Consider adding a check or placing this setup within the DOMContentLoaded logic after verifying pdfjsLib exists.
+        // However, PDF.js documentation often shows setting this globally early.
+        try {
+            if (typeof pdfjsLib !== 'undefined') {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+            } else {
+                 // Defer setting it if library isn't loaded yet (might happen with script loading race conditions)
+                 // The main script logic will need to handle this possibility.
+                 console.warn("pdfjsLib not defined when setting workerSrc globally. Will attempt later.");
+            }
+        } catch (e) {
+            console.error("Error setting PDF.js worker source:", e);
         }
     </script>
 
@@ -80,7 +89,8 @@
         /* Show sidebars on wider screens */
         @media (min-width: 1024px) {
             .sidebar {
-                display: block;
+                display: flex; /* Use flex for alignment within sidebar */
+                flex-direction: column;
             }
         }
 
@@ -136,7 +146,9 @@
             color: white;
             display: inline-flex;
             align-items: center;
+            justify-content: center; /* Center content */
             gap: 8px;
+            text-align: center; /* Ensure text inside is centered */
         }
 
         .btn:hover {
@@ -174,8 +186,6 @@
         .btn-source {
             flex-grow: 1; /* Allow buttons to grow */
             min-width: 150px; /* Minimum width */
-            text-align: center;
-            justify-content: center; /* Center icon and text */
         }
         .btn-source i {
             font-size: 1.2em;
@@ -189,6 +199,7 @@
             text-align: center;
             font-size: 0.9em;
             color: #555;
+            min-height: 1.2em; /* Prevent layout shift when message appears/disappears */
         }
 
 
@@ -220,6 +231,7 @@
             font-weight: bold;
             color: #495057;
             margin: 0 10px;
+            white-space: nowrap; /* Prevent wrapping */
         }
 
         #pdf-render-area {
@@ -230,6 +242,7 @@
             align-items: flex-start; /* Align canvas to top */
             position: relative; /* For loading indicator positioning */
             min-height: 400px; /* Ensure some minimum height */
+            background-color: #e9ecef; /* Match panel bg */
         }
 
         #pdf-canvas {
@@ -237,6 +250,7 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             max-width: 100%; /* Ensure canvas is responsive */
             height: auto; /* Maintain aspect ratio */
+            display: block; /* Fix potential extra space below canvas */
         }
 
         /* --- Loading & Error States --- */
@@ -251,21 +265,25 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
             z-index: 10;
+            display: none; /* Hidden by default */
         }
         .loading i {
             font-size: 2em;
             color: #007bff;
             display: block;
             margin-bottom: 10px;
+            animation: fa-spin 1.5s infinite linear; /* Add animation */
         }
         .error {
             color: #dc3545;
             font-weight: bold;
             border: 1px solid #dc3545;
         }
-        #loading-indicator {
-            display: none; /* Hidden by default */
+        @keyframes fa-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
+
 
         /* --- Advertisements --- */
         .ad-space {
@@ -280,18 +298,27 @@
             color: #999;
             font-size: 0.9em;
             padding: 15px; /* Add padding inside ad space */
+            width: 100%; /* Take full width of container */
+            margin-top: 10px; /* Space above ad title */
         }
-        .ad-space h2 {
+        .ad-space-title {
             font-size: 1em;
             color: #aaa;
             margin-bottom: 10px; /* Space between title and ad placeholder/content */
+            font-weight: bold;
         }
 
-        .ad-space-sidebar {
-            min-height: 250px; /* Taller for sidebar */
-            margin-bottom: 20px; /* Space between multiple sidebar ads if needed */
+        .ad-sidebar {
+             /* Sidebar itself handles width via flex */
+             margin-bottom: 20px; /* Space between multiple sidebar ads if needed */
         }
-        .ad-space-bottom {
+        .ad-sidebar .ad-space {
+             min-height: 250px; /* Taller for sidebar */
+        }
+        .ad-bottom {
+            width: 100%; /* Ensure it takes full width in content area */
+        }
+        .ad-bottom .ad-space {
             min-height: 90px; /* Shorter for bottom banner */
         }
 
@@ -300,42 +327,52 @@
         }
 
         /* --- Responsiveness --- */
-        @media (max-width: 768px) {
+        @media (max-width: 1023px) { /* Adjusted breakpoint to hide sidebars earlier */
             .container {
                 flex-direction: column;
                 padding: 10px;
             }
 
             .sidebar {
-                display: none; /* Ensure sidebars are hidden on mobile */
-                width: 100%;
-                flex: none;
+                display: none; /* Ensure sidebars are hidden */
             }
-             /* Optionally show ads at top/bottom on mobile */
-            .ad-sidebar-left, .ad-sidebar-right {
-                 display: none; /* Keep sidebars hidden or re-purpose as top/bottom ads */
-            }
-            .ad-space-bottom {
+
+             .ad-bottom {
                 order: 3; /* Ensure bottom ad stays at bottom in column layout */
-            }
+             }
 
             .content-area {
                 width: 100%;
                 flex: 1; /* Take available space */
             }
+        }
 
+         @media (max-width: 768px) {
             .source-buttons {
                 flex-direction: column; /* Stack source buttons */
+                align-items: stretch; /* Make buttons full width */
             }
             .btn-source {
                 width: 100%; /* Make buttons full width */
+                flex-grow: 0; /* Prevent stretching */
             }
 
             .pdf-controls {
                 justify-content: space-around; /* Better spacing on small screens */
+                gap: 5px; /* Reduce gap */
             }
+            #pageIndicator, #zoomLevel {
+                 font-size: 0.9em; /* Slightly smaller text */
+                 margin: 0 5px;
+            }
+            .pdf-controls .btn {
+                 padding: 6px 10px;
+                 font-size: 0.8em;
+            }
+
             .main-header h1 { font-size: 1.5em; }
             .main-header p { font-size: 0.9em; }
+            .card { padding: 15px; }
         }
     </style>
 
@@ -349,9 +386,9 @@
 
     <main class="container">
 
-        <aside class="sidebar ad-sidebar-left">
-            <h2>Advertisement</h2>
-            <div class="ad-space ad-space-sidebar">
+        <aside class="sidebar ad-sidebar">
+            <h2 class="ad-space-title">Advertisement</h2>
+            <div class="ad-space">
                 <!-- === PASTE YOUR GOOGLE ADSENSE CODE (e.g., Display Ad Unit) HERE === -->
                 <!-- Replace YOUR_AD_CLIENT_ID and YOUR_AD_SLOT_ID -->
                 <!--
@@ -370,16 +407,20 @@
                 <p class="ad-placeholder">[Adsense Sidebar Ad Placeholder]</p>
                 <!-- === END ADSENSE CODE === -->
             </div>
+             <!-- Add more ad slots if needed -->
         </aside>
 
         <section class="content-area">
             <div id="file-selector" class="file-selector-panel card">
                 <h2><i class="fas fa-folder-open"></i> Select PDF Source</h2>
                 <div class="source-buttons">
+                     <!-- "My Device" Button (Corrected Structure) -->
                     <button id="btnDevice" class="btn btn-source">
                         <i class="fas fa-laptop-file"></i> My Device
-                        <input type="file" id="fileInput" accept=".pdf" style="display: none;">
                     </button>
+                    <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+                     <!-- End "My Device" -->
+
                     <button id="btnGoogleDrive" class="btn btn-source btn-google">
                         <i class="fab fa-google-drive"></i> Google Drive
                     </button>
@@ -390,7 +431,7 @@
                         <i class="fab fa-dropbox"></i> Dropbox <small>(Coming Soon)</small>
                     </button>
                 </div>
-                 <div id="google-drive-status" class="status-message" style="display: none;"></div>
+                 <div id="status-message" class="status-message"></div>
             </div>
 
             <div id="pdf-viewer-container" class="pdf-viewer-panel card" style="display: none;">
@@ -405,38 +446,40 @@
                 <div id="pdf-render-area">
                      <canvas id="pdf-canvas"></canvas>
                      <div id="loading-indicator" class="loading">
-                        <i class="fas fa-spinner fa-spin"></i> Loading PDF...
+                        <i class="fas fa-spinner"></i> Loading PDF...
                      </div>
-                     <div id="error-message" class="error" style="display: none;"></div>
+                     <div id="error-message" class="error"></div>
                 </div>
             </div>
 
-            <div class="ad-space ad-space-bottom card">
-                 <h2>Advertisement</h2>
-                <!-- === PASTE YOUR GOOGLE ADSENSE CODE (e.g., Horizontal Ad Unit) HERE === -->
-                <!-- Replace YOUR_AD_CLIENT_ID and YOUR_AD_SLOT_ID -->
-                 <!--
-                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_AD_CLIENT_ID"
-                     crossorigin="anonymous"></script>
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="ca-pub-YOUR_AD_CLIENT_ID"
-                     data-ad-slot="YOUR_AD_SLOT_ID"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
-                <script>
-                     (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-                -->
-                <p class="ad-placeholder">[Adsense Bottom Ad Placeholder]</p>
-                <!-- === END ADSENSE CODE === -->
+            <div class="ad-bottom card">
+                 <h2 class="ad-space-title">Advertisement</h2>
+                 <div class="ad-space">
+                    <!-- === PASTE YOUR GOOGLE ADSENSE CODE (e.g., Horizontal Ad Unit) HERE === -->
+                    <!-- Replace YOUR_AD_CLIENT_ID and YOUR_AD_SLOT_ID -->
+                     <!--
+                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_AD_CLIENT_ID"
+                         crossorigin="anonymous"></script>
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-YOUR_AD_CLIENT_ID"
+                         data-ad-slot="YOUR_AD_SLOT_ID"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                    <script>
+                         (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                    -->
+                    <p class="ad-placeholder">[Adsense Bottom Ad Placeholder]</p>
+                    <!-- === END ADSENSE CODE === -->
+                </div>
             </div>
 
         </section>
 
-         <aside class="sidebar ad-sidebar-right">
-             <h2>Advertisement</h2>
-            <div class="ad-space ad-space-sidebar">
+         <aside class="sidebar ad-sidebar">
+             <h2 class="ad-space-title">Advertisement</h2>
+            <div class="ad-space">
                 <!-- === PASTE YOUR GOOGLE ADSENSE CODE (e.g., Display Ad Unit) HERE === -->
                 <!-- Replace YOUR_AD_CLIENT_ID and YOUR_AD_SLOT_ID -->
                 <!--
@@ -455,6 +498,7 @@
                 <p class="ad-placeholder">[Adsense Sidebar Ad Placeholder]</p>
                 <!-- === END ADSENSE CODE === -->
             </div>
+             <!-- Add more ad slots if needed -->
         </aside>
 
     </main>
@@ -464,51 +508,13 @@
         <!-- Add links to Privacy Policy, Terms of Service if applicable -->
     </footer>
 
-    <!-- Google API Client Library -->
-    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <!-- Google API Client Library - Load asynchronously and defer execution -->
+    <script src="https://apis.google.com/js/api.js" async defer onload="handleGoogleApiLoad()"></script> <!-- Added onload callback -->
 
     <!-- Embedded Custom JavaScript -->
     <script>
-        // Define functions in the global scope or attach to window
-        // if they need to be called by external libraries like gapi.load callback
-
-        /**
-         * Initializes the Google API client library.
-         * MUST be globally accessible if used as a callback for gapi.load.
-         */
-        window.initializeGapiClient = function() {
-             // --- Configuration ---
-             // !! SECURITY WARNING: Storing API keys and Client IDs directly in client-side code
-             // !! is generally insecure for public applications. Consider server-side OAuth flows
-             // !! or restricted API keys for production. These are used here for demonstration based on the request.
-            const GOOGLE_API_KEY = "AIzaSyAs1-yX51Kd5aKl-mB1oHhKXhOwCUDcPUY"; // USE YOUR KEY
-            const GOOGLE_CLIENT_ID = "705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com"; // USE YOUR CLIENT ID
-            const GOOGLE_DRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.readonly'; // Read-only access is safer
-            const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest", "https://www.googleapis.com/discovery/v1/apis/picker/v1/rest"];
-
-             // Get reference to elements needed within this function (e.g., status)
-             const googleDriveStatus = document.getElementById('google-drive-status');
-             const btnGoogleDrive = document.getElementById('btnGoogleDrive');
-
-            function showStatus(message, isError = false) {
-                if (!googleDriveStatus) return;
-                googleDriveStatus.textContent = message;
-                googleDriveStatus.style.color = isError ? '#dc3545' : '#007bff';
-                googleDriveStatus.style.display = 'block';
-            }
-
-            gapi.client.init({
-                apiKey: GOOGLE_API_KEY,
-                clientId: GOOGLE_CLIENT_ID,
-                discoveryDocs: DISCOVERY_DOCS,
-                scope: GOOGLE_DRIVE_SCOPES
-            }).then(() => {
-                console.log("Google API Client initialized.");
-                // Access the main app's instance/functions if needed
-                // e.g., window.pdfViewerApp.googleAuthInstance = gapi.auth2.getAuthInstance();
-                const app = window.pdfViewerApp; // Assuming main logic is attached to window.pdfViewerApp
-                if (app) {
-                    app.googleAuthInstance = gapi.auth2.getAuthInstance();
-
-                    // Listen for sign-in state changes
-                    app.googleAuthInstance.isSignedIn.listen(app.upda
+        // --- Google API Configuration ---
+        // !! SECURITY WARNING !!
+        // Storing API Keys and Client IDs directly in client-side JS is NOT recommended
+        // for public applications due to security risks. Use server-side OAuth flows
+        // or restricted API keys with HTTP referrer r
