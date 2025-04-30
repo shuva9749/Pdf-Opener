@@ -1,327 +1,293 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Google Drive Picker</title>
+  <meta name="description" content="Select files from your Google Drive using the official file picker." />
+  <meta name="keywords" content="Google Drive, File Picker, PDF Viewer" />
+  <meta name="author" content="Your Name" />
 
-    <!-- SEO Meta Tags -->
-    <title>Super Advanced PDF Viewer | View & Manage PDFs Online</title>
-    <meta name="description" content="View PDF files instantly from your device, Google Drive, OneDrive, or Dropbox. A fast, beautiful, and user-friendly online PDF reader.">
-    <meta name="keywords" content="pdf viewer, online pdf reader, view pdf, pdf document, google drive pdf, dropbox pdf, onedrive pdf, free pdf viewer">
-    <meta name="author" content="Your Name or Company"> <!-- CHANGE THIS -->
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
 
-    <!-- Favicon (Optional but Recommended) -->
-    <!-- <link rel="icon" href="favicon.ico" type="image/x-icon"> -->
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #f0f4ff, #d2e3fc);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
 
-    <!-- PDF.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" integrity="sha512-Tdh5OqBGVOQw6+U3qCeHkcmvrfxG46+wLiyT/wHk7099JdPM5LSzc72LdJR79Jg5+Rj8a3W/G5+2SjUsToLQpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script>
-        // Set worker source early, handle potential undefined pdfjsLib
-        try {
-            if (typeof pdfjsLib !== 'undefined') {
-                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-                console.log("PDF.js workerSrc set globally.");
-            } else {
-                console.warn("pdfjsLib not defined yet for global workerSrc setup.");
-            }
-        } catch (e) {
-            console.error("Error setting PDF.js worker source globally:", e);
-        }
-    </script>
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
 
-    <!-- Embedded Styles -->
-    <style>
-        /* --- Basic Reset & Defaults --- */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Roboto', sans-serif; line-height: 1.6; background-color: #f4f7f6; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
-        /* --- Layout --- */
-        .container { display: flex; flex-grow: 1; padding: 20px; gap: 20px; max-width: 1600px; margin: 0 auto; width: 100%; }
-        .content-area { flex: 3; display: flex; flex-direction: column; gap: 20px; }
-        .sidebar { flex: 1; display: none; flex-direction: column; }
-        @media (min-width: 1024px) { .sidebar { display: flex; } }
-        /* --- Header & Footer --- */
-        .main-header { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 25px 20px; text-align: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
-        .main-header h1 { margin-bottom: 5px; font-weight: 700; } .main-header h1 i { margin-right: 10px; }
-        .main-header p { font-weight: 300; opacity: 0.9; }
-        .main-footer { background-color: #343a40; color: #adb5bd; text-align: center; padding: 15px 20px; margin-top: auto; font-size: 0.9em; }
-        /* --- Utility --- */
-        .card { background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); padding: 25px; border: 1px solid #e0e0e0; }
-        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; transition: all 0.3s ease; background-color: #007bff; color: white; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-align: center; }
-        .btn:hover { opacity: 0.9; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
-        .btn:active { transform: translateY(1px); }
-        .btn:disabled { background-color: #cccccc; cursor: not-allowed; opacity: 0.7; }
-        /* --- File Selector --- */
-        .file-selector-panel h2 { margin-bottom: 20px; color: #0056b3; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; } .file-selector-panel h2 i { margin-right: 8px; }
-        .source-buttons { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
-        .btn-source { flex-grow: 1; min-width: 150px; } .btn-source i { font-size: 1.2em; }
-        .btn-google { background-color: #db4437; } .btn-onedrive { background-color: #0078d4; } .btn-dropbox { background-color: #0061ff; }
-        .status-message { margin-top: 15px; text-align: center; font-size: 0.9em; color: #555; min-height: 1.2em; }
-        /* --- PDF Viewer --- */
-        .pdf-viewer-panel { background-color: #e9ecef; }
-        .pdf-controls { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 15px; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; border-radius: 8px 8px 0 0; flex-wrap: wrap; }
-        .pdf-controls .btn { padding: 8px 15px; font-size: 0.9em; } .btn-nav { background-color: #6c757d; } .btn-zoom { background-color: #28a745; }
-        #pageIndicator, #zoomLevel { font-weight: bold; color: #495057; margin: 0 10px; white-space: nowrap; }
-        #pdf-render-area { padding: 20px; overflow: auto; display: flex; justify-content: center; align-items: flex-start; position: relative; min-height: 400px; background-color: #e9ecef; }
-        #pdf-canvas { border: 1px solid #ced4da; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 100%; height: auto; display: block; }
-        /* --- Loading & Error States --- */
-        .loading, .error { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255, 255, 255, 0.9); padding: 20px 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); text-align: center; z-index: 10; display: none; }
-        .loading i { font-size: 2em; color: #007bff; display: block; margin-bottom: 10px; animation: fa-spin 1.5s infinite linear; }
-        .error { color: #dc3545; font-weight: bold; border: 1px solid #dc3545; }
-        @keyframes fa-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* --- Advertisements --- */
-        .ad-space { border: 1px dashed #cccccc; background-color: #f9f9f9; min-height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: #999; font-size: 0.9em; padding: 15px; width: 100%; margin-top: 10px; }
-        .ad-space-title { font-size: 1em; color: #aaa; margin-bottom: 10px; font-weight: bold; }
-        .ad-sidebar { margin-bottom: 20px; } .ad-sidebar .ad-space { min-height: 250px; }
-        .ad-bottom { width: 100%; } .ad-bottom .ad-space { min-height: 90px; }
-        .ad-placeholder { font-style: italic; }
-        /* --- Responsiveness --- */
-        @media (max-width: 1023px) { .container { flex-direction: column; padding: 10px; } .sidebar { display: none; } .ad-bottom { order: 3; } .content-area { width: 100%; flex: 1; } }
-        @media (max-width: 768px) { .source-buttons { flex-direction: column; align-items: stretch; } .btn-source { width: 100%; flex-grow: 0; } .pdf-controls { justify-content: space-around; gap: 5px; } #pageIndicator, #zoomLevel { font-size: 0.9em; margin: 0 5px; } .pdf-controls .btn { padding: 6px 10px; font-size: 0.8em; } .main-header h1 { font-size: 1.5em; } .main-header p { font-size: 0.9em; } .card { padding: 15px; } }
-    </style>
+    header h1 {
+      color: #1a73e8;
+      font-size: 2rem;
+    }
 
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .button-group button, .button-group label {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .button-group button:hover,
+    .button-group label:hover {
+      background-color: #0c5dc0;
+      transform: scale(1.03);
+    }
+
+    .button-group img {
+      height: 20px;
+    }
+
+    #content {
+      background-color: #ffffff;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 900px;
+      width: 100%;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+
+    #my_device_input {
+      display: none;
+    }
+
+    canvas {
+      margin-top: 1rem;
+      max-width: 100%;
+      border: 1px solid #ccc;
+    }
+
+    @media (max-width: 600px) {
+      .button-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .button-group button, .button-group label {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <h1>Google Drive File Picker</h1>
+  </header>
 
-    <header class="main-header">
-        <h1><i class="fas fa-file-pdf"></i> Super Advanced PDF Viewer</h1>
-        <p>View PDFs from anywhere, effortlessly.</p>
-    </header>
+  <div class="button-group">
+    <button id="authorize_button" onclick="handleAuthClick()">
+      <img src="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png" alt="Drive Icon" />
+      Google Drive
+    </button>
+    <button id="signout_button" onclick="handleSignoutClick()">
+      <i class="fas fa-sign-out-alt"></i>
+      Sign Out
+    </button>
+    <label for="my_device_input">
+      <i class="fas fa-folder-open"></i>
+      My Device
+    </label>
+    <input type="file" id="my_device_input" accept="application/pdf" multiple onchange="handleLocalFiles(event)" />
+  </div>
 
-    <main class="container">
+  <div id="content"></div>
 
-        <aside class="sidebar ad-sidebar">
-            <h2 class="ad-space-title">Advertisement</h2>
-            <div class="ad-space">
-                <p class="ad-placeholder">[Adsense Sidebar Ad Placeholder]</p>
-            </div>
-        </aside>
+  <!-- PDF.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-        <section class="content-area">
-            <div id="file-selector" class="file-selector-panel card">
-                <h2><i class="fas fa-folder-open"></i> Select PDF Source</h2>
-                <div class="source-buttons">
-                    <!-- "My Device" Button (Corrected Structure) -->
-                    <button id="btnDevice" class="btn btn-source">
-                        <i class="fas fa-laptop-file"></i> My Device
-                    </button>
-                    <input type="file" id="fileInput" accept=".pdf" style="display: none;">
-                    <!-- End "My Device" -->
+  <!-- Google API Scripts -->
+  <script>
+    const CLIENT_ID = '705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com';
+    const API_KEY = 'AIzaSyAs1-yX51Kd5aKl-mB1oHhKXhOwCUDcPUY';
+    const APP_ID = '705204588232';
+    const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
 
-                    <button id="btnGoogleDrive" class="btn btn-source btn-google" disabled> <!-- Start disabled -->
-                        <i class="fab fa-google-drive"></i> Google Drive
-                    </button>
-                    <button id="btnOneDrive" class="btn btn-source btn-onedrive" disabled>
-                        <i class="fab fa-windows"></i> OneDrive <small>(Coming Soon)</small>
-                    </button>
-                    <button id="btnDropbox" class="btn btn-source btn-dropbox" disabled>
-                        <i class="fab fa-dropbox"></i> Dropbox <small>(Coming Soon)</small>
-                    </button>
-                </div>
-                 <div id="status-message" class="status-message">Initializing...</div> <!-- Initial status -->
-            </div>
+    let tokenClient;
+    let accessToken = null;
+    let pickerInited = false;
+    let gisInited = false;
 
-            <div id="pdf-viewer-container" class="pdf-viewer-panel card" style="display: none;">
-                <div id="pdf-controls" class="pdf-controls">
-                    <button id="prevPage" class="btn btn-nav"><i class="fas fa-arrow-left"></i> Prev</button>
-                    <span id="pageIndicator">Page <span id="page_num"></span> / <span id="page_count"></span></span>
-                    <button id="nextPage" class="btn btn-nav">Next <i class="fas fa-arrow-right"></i></button>
-                    <button id="zoomOut" class="btn btn-zoom"><i class="fas fa-search-minus"></i></button>
-                    <button id="zoomIn" class="btn btn-zoom"><i class="fas fa-search-plus"></i></button>
-                     <span id="zoomLevel">Zoom: 100%</span>
-                </div>
-                <div id="pdf-render-area">
-                     <canvas id="pdf-canvas"></canvas>
-                     <div id="loading-indicator" class="loading">
-                        <i class="fas fa-spinner"></i> Loading PDF...
-                     </div>
-                     <div id="error-message" class="error"></div>
-                </div>
-            </div>
+    document.getElementById('authorize_button').style.visibility = 'hidden';
+    document.getElementById('signout_button').style.visibility = 'hidden';
 
-            <div class="ad-bottom card">
-                 <h2 class="ad-space-title">Advertisement</h2>
-                 <div class="ad-space">
-                    <p class="ad-placeholder">[Adsense Bottom Ad Placeholder]</p>
-                </div>
-            </div>
+    function gapiLoaded() {
+      gapi.load('client:picker', initializePicker);
+    }
 
-        </section>
+    async function initializePicker() {
+      await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
+      pickerInited = true;
+      maybeEnableButtons();
+    }
 
-         <aside class="sidebar ad-sidebar">
-             <h2 class="ad-space-title">Advertisement</h2>
-            <div class="ad-space">
-                <p class="ad-placeholder">[Adsense Sidebar Ad Placeholder]</p>
-            </div>
-        </aside>
+    function gisLoaded() {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: ''
+      });
+      gisInited = true;
+      maybeEnableButtons();
+    }
 
-    </main>
+    function maybeEnableButtons() {
+      if (pickerInited && gisInited) {
+        document.getElementById('authorize_button').style.visibility = 'visible';
+      }
+    }
 
-    <footer class="main-footer">
-        <p>© <span id="currentYear"></span> Super Advanced PDF Viewer. All rights reserved.</p>
-    </footer>
+    function handleAuthClick() {
+      tokenClient.callback = async (response) => {
+        if (response.error !== undefined) throw response;
+        accessToken = response.access_token;
+        document.getElementById('signout_button').style.visibility = 'visible';
+        document.getElementById('authorize_button').innerText = 'Google Drive';
+        await createPicker();
+      };
 
-    <!-- Google API Client Library -->
-    <!-- Added `onerror` to catch script loading failures -->
-    <script src="https://apis.google.com/js/api.js" async defer onload="handleGoogleApiLoad()" onerror="handleGoogleApiScriptError()"></script>
+      if (!accessToken) {
+        tokenClient.requestAccessToken({ prompt: 'consent' });
+      } else {
+        tokenClient.requestAccessToken({ prompt: '' });
+      }
+    }
 
-    <!-- Embedded Custom JavaScript -->
-    <script>
-        // --- Google API Configuration ---
-        const GOOGLE_API_KEY = "AIzaSyAs1-yX51Kd5aKl-mB1oHhKXhOwCUDcPUY"; // <-- REPLACE with your actual API Key
-        const GOOGLE_CLIENT_ID = "705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com"; // <-- REPLACE with your actual Client ID
-        const GOOGLE_DRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
-        const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
+    function handleSignoutClick() {
+      if (accessToken) {
+        google.accounts.oauth2.revoke(accessToken);
+        accessToken = null;
+        document.getElementById('content').innerText = '';
+        document.getElementById('authorize_button').innerText = 'Google Drive';
+        document.getElementById('signout_button').style.visibility = 'hidden';
+      }
+    }
 
-        // --- Global App Namespace ---
-        const pdfViewerApp = {
-            pdfDoc: null, pageNum: 1, pageRendering: false, pageNumPending: null, scale: 1.5, currentPdfSource: null,
-            fileInput: null, btnDevice: null, btnGoogleDrive: null, btnOneDrive: null, btnDropbox: null,
-            pdfViewerContainer: null, canvas: null, ctx: null, loadingIndicator: null, errorMessage: null,
-            prevPageBtn: null, nextPageBtn: null, zoomInBtn: null, zoomOutBtn: null,
-            pageNumSpan: null, pageCountSpan: null, zoomLevelSpan: null, statusMessage: null, currentYearSpan: null,
-            gapiLoaded: false, gisLoaded: false, googleAuthInstance: null, googlePickerApiLoaded: false, googleAccessToken: null,
-        };
+    function createPicker() {
+      const view = new google.picker.View(google.picker.ViewId.DOCS);
+      view.setMimeTypes('application/pdf,image/png,image/jpeg');
 
-        // --- Google API Initialization Functions ---
-        function handleGoogleApiScriptError() {
-            console.error("FATAL: Failed to load the Google API script (api.js). Check network connection and script URL.");
-            pdfViewerApp.showStatus("Could not load Google services. Google Drive functionality is unavailable.", true);
-            // Keep GDrive button disabled if script itself fails
-            if (pdfViewerApp.btnGoogleDrive) pdfViewerApp.btnGoogleDrive.disabled = true;
-        }
+      const picker = new google.picker.PickerBuilder()
+        .enableFeature(google.picker.Feature.NAV_HIDDEN)
+        .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
+        .setDeveloperKey(API_KEY)
+        .setAppId(APP_ID)
+        .setOAuthToken(accessToken)
+        .addView(view)
+        .addView(new google.picker.DocsUploadView())
+        .setCallback(pickerCallback)
+        .build();
 
-        function handleGoogleApiLoad() {
-            console.log("Google API script (api.js) loaded successfully.");
-            pdfViewerApp.gapiLoaded = true;
-            pdfViewerApp.showStatus("Loading Google libraries...");
-            gapi.load('client:auth2:picker', {
-                callback: initializeGapiClient,
-                onerror: handleGapiLoadError,
-                timeout: 7000, // Increased timeout slightly
-                ontimeout: handleGapiLoadError,
+      picker.setVisible(true);
+    }
+
+    async function pickerCallback(data) {
+      if (data.action === google.picker.Action.PICKED) {
+        const contentDiv = document.getElementById('content');
+        contentDiv.innerHTML = `<strong>Selected Files:</strong><br/>`;
+
+        for (const doc of data.docs) {
+          const fileId = doc.id;
+          const fileName = doc.name;
+
+          const fileDetails = document.createElement('p');
+          fileDetails.innerHTML = `<strong>${fileName}</strong><br>File ID: ${fileId}`;
+          contentDiv.appendChild(fileDetails);
+
+          try {
+            const res = await gapi.client.drive.files.get({
+              fileId,
+              fields: '*'
             });
+            const detail = document.createElement('pre');
+            detail.textContent = JSON.stringify(res.result, null, 2);
+            contentDiv.appendChild(detail);
+          } catch (e) {
+            const error = document.createElement('p');
+            error.style.color = 'red';
+            error.textContent = 'Error loading file details';
+            contentDiv.appendChild(error);
+          }
         }
+      }
+    }
 
-        function handleGapiLoadError(err) {
-             console.error("Error loading Google client:auth2:picker:", err);
-             pdfViewerApp.showStatus("Error loading Google components. Google Drive may be unavailable.", true);
-             if (pdfViewerApp.btnGoogleDrive) pdfViewerApp.btnGoogleDrive.disabled = true;
-             // Clean up potentially partially initialized state?
-             pdfViewerApp.googleAuthInstance = null;
-             pdfViewerApp.googlePickerApiLoaded = false;
-        }
+    function handleLocalFiles(event) {
+      const files = event.target.files;
+      const contentDiv = document.getElementById('content');
+      contentDiv.innerHTML = `<strong>Files from My Device:</strong><br/>`;
 
-        async function initializeGapiClient() {
-            console.log("Attempting to initialize Google API Client...");
-            pdfViewerApp.showStatus("Initializing Google connection...");
-            try {
-                await gapi.client.init({
-                    apiKey: GOOGLE_API_KEY,
-                    clientId: GOOGLE_CLIENT_ID,
-                    discoveryDocs: DISCOVERY_DOCS,
-                    scope: GOOGLE_DRIVE_SCOPES
+      for (const file of files) {
+        const fileDetails = document.createElement('p');
+        fileDetails.innerHTML = `<strong>${file.name}</strong><br>Type: ${file.type}<br>Size: ${file.size} bytes`;
+        contentDiv.appendChild(fileDetails);
+
+        // Render PDF content
+        const reader = new FileReader();
+        reader.onload = function () {
+          const typedarray = new Uint8Array(reader.result);
+          pdfjsLib.getDocument({ data: typedarray }).promise.then(pdf => {
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+              pdf.getPage(pageNum).then(page => {
+                const scale = 1.5;
+                const viewport = page.getViewport({ scale });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                contentDiv.appendChild(canvas);
+
+                page.render({
+                  canvasContext: context,
+                  viewport: viewport
                 });
-                console.log("gapi.client.init successful.");
-
-                pdfViewerApp.googleAuthInstance = gapi.auth2.getAuthInstance();
-                if (!pdfViewerApp.googleAuthInstance) {
-                    // This case should ideally not happen if gapi.load succeeded, but check anyway
-                    throw new Error("Failed to get gapi.auth2 instance after client init.");
-                }
-                 console.log("gapi.auth2.getAuthInstance successful.");
-
-                pdfViewerApp.googleAuthInstance.isSignedIn.listen(updateSigninStatus);
-                console.log("Sign-in listener attached.");
-
-                // Initial status check
-                const initialSignedIn = pdfViewerApp.googleAuthInstance.isSignedIn.get();
-                console.log("Initial Google Signed-In Status:", initialSignedIn);
-                updateSigninStatus(initialSignedIn); // Update UI based on initial status
-
-                pdfViewerApp.googlePickerApiLoaded = true;
-                console.log("Google Picker API is ready.");
-
-                if (pdfViewerApp.btnGoogleDrive) {
-                    pdfViewerApp.btnGoogleDrive.disabled = false; // *** ENABLE THE BUTTON HERE ***
-                    console.log("Google Drive button ENABLED.");
-                } else {
-                     console.error("Google Drive button not found when trying to enable it!");
-                }
-                // Update status message only if not signed in initially
-                if (!initialSignedIn) {
-                    pdfViewerApp.showStatus("Ready. Select a PDF source.", false);
-                }
-
-            } catch (error) {
-                console.error("!!!! Error during Google API Client/Auth initialization !!!!:", error);
-                let errorMsg = "Failed to initialize Google services.";
-                if (error.details) { errorMsg += ` Details: ${error.details}`; }
-                else if (error.message) { errorMsg += ` Message: ${error.message}`; }
-                else if (typeof error === 'object') { errorMsg += ` Error: ${JSON.stringify(error)}`;}
-                else { errorMsg += ` Error: ${error}`; }
-
-                pdfViewerApp.showStatus(errorMsg, true);
-                if (pdfViewerApp.btnGoogleDrive) pdfViewerApp.btnGoogleDrive.disabled = true;
-                 console.log("Google Drive button remains DISABLED due to init error.");
-                 pdfViewerApp.googleAuthInstance = null;
-                 pdfViewerApp.googlePickerApiLoaded = false;
+              });
             }
-        }
+          });
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    }
+  </script>
 
-
-        // --- Main Application Logic ---
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("==== DOMContentLoaded event fired ====");
-            const app = pdfViewerApp; // Alias
-
-            // --- Assign DOM Elements (with checks) ---
-            console.log("Assigning DOM elements...");
-            const requiredElements = [
-                'fileInput', 'btnDevice', 'btnGoogleDrive', 'btnOneDrive', 'btnDropbox',
-                'pdfViewerContainer', 'canvas', 'loadingIndicator', 'errorMessage',
-                'prevPageBtn', 'nextPageBtn', 'zoomInBtn', 'zoomOutBtn',
-                'pageNumSpan', 'pageCountSpan', 'zoomLevelSpan', 'statusMessage', 'currentYearSpan'
-            ];
-            let allElementsFound = true;
-            requiredElements.forEach(id => {
-                app[id] = document.getElementById(id);
-                if (!app[id]) {
-                    console.error(`Critical Error: DOM element with ID '${id}' not found!`);
-                    allElementsFound = false;
-                }
-            });
-
-            if (!allElementsFound) {
-                app.showStatus("Page setup error: Missing required elements.", true);
-                // Display a more user-friendly message in the main area if possible
-                document.body.innerHTML = '<h1 style="color: red; text-align: center; padding: 50px;">Page Loading Error. Required components are missing. Please contact support.</h1>';
-                return; // Stop initialization completely
-            }
-
-            if (app.canvas) {
-                app.ctx = app.canvas.getContext('2d');
-                 console.log("Canvas context obtained.");
-            } else {
-                 // This case is already handled by the check above, but for clarity
-                 console.error("Canvas element check failed within DOMContentLoaded.");
-                 return;
-            }
-            console.log("All required DOM elements assigned.");
-
-            // --- Basic Initial Setup ---
-            if(app.currentYearSpan) app.currentYearSpan.textContent = new Date().getFullYear();
-            // Initial status message is set in HTML, updated by API init later
-
-            // --- PDF.js Check and Worker Setup (Fallback) ---
-             if (typeof pdfjsLib === 'undefined') {
-                 console.error("FATAL: pdfjsLib is not defined within DOMContentLoaded!");
-                 app.showError("Error: PDF viewing library failed to load. Please refresh.");
-                 app.showStatus("PDF Libra
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+</body>
+</html>
