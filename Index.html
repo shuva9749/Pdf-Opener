@@ -1,127 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>File Picker</title>
-  <script src="https://apis.google.com/js/api.js"></script>
-  <script src="https://accounts.google.com/gsi/client"></script>
-  <script src="https://www.dropbox.com/static/api/2/dropins.js" data-app-key="317alyycs84fbvu" id="dropboxjs"></script>
+  <meta charset="UTF-8">
+  <title>Dropbox File Upload</title>
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 30px;
-    }
-    button {
-      margin: 10px;
-      padding: 10px 20px;
+    /* ===== Dropbox ফাইল আপলোডের CSS সেকশন ===== */
+    #dropbox-button {
+      background-color: #0061ff;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
       font-size: 16px;
     }
-    #output {
-      margin-top: 30px;
+
+    #dropbox-button:hover {
+      background-color: #004edc;
+    }
+
+    #dropbox-filename {
+      margin-top: 15px;
+      font-family: sans-serif;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
 
-  <h2>File Picker</h2>
+  <!-- ===== Dropbox ফাইল আপলোডের HTML সেকশন ===== -->
+  <h2>Dropbox থেকে ফাইল নির্বাচন করুন</h2>
+  <button id="dropbox-button">Dropbox থেকে ফাইল নির্বাচন করুন</button>
+  <div id="dropbox-filename"></div>
 
-  <!-- Google Drive Picker -->
-  <button onclick="handleAuthClick()">Pick from Google Drive</button>
-
-  <!-- Dropbox Picker -->
-  <button onclick="launchDropboxChooser()">Pick from Dropbox</button>
-
-  <!-- My Device Picker -->
-  <input type="file" id="localPicker" onchange="handleLocalFile(event)" />
-  <label for="localPicker">
-    <button>Select from My Device</button>
-  </label>
-
-  <div id="output"></div>
+  <!-- Dropbox Chooser JS SDK লোড -->
+  <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="317alyycs84fbvu"></script>
 
   <script>
-    const CLIENT_ID = '705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com';
-    const API_KEY = 'AIzaSyAs1-yX51Kd5aKl-mB1oHhKXhOwCUDcPUY';
-    const APP_ID = '705204588232';
-    const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
+    // ===== Dropbox ফাইল আপলোডের JavaScript সেকশন =====
 
-    let tokenClient;
-    let accessToken = null;
-
-    function gapiLoaded() {
-      gapi.load('client:picker', initializePicker);
-    }
-
-    async function initializePicker() {
-      await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
-      tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: (response) => {
-          if (response.error !== undefined) throw response;
-          accessToken = response.access_token;
-          createPicker();
-        },
-      });
-    }
-
-    function handleAuthClick() {
-      if (!accessToken) {
-        tokenClient.requestAccessToken({ prompt: 'consent' });
-      } else {
-        createPicker();
-      }
-    }
-
-    function createPicker() {
-      const view = new google.picker.View(google.picker.ViewId.DOCS);
-      view.setMimeTypes("application/pdf,image/png,image/jpeg");
-
-      const picker = new google.picker.PickerBuilder()
-        .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
-        .setAppId(APP_ID)
-        .setOAuthToken(accessToken)
-        .setDeveloperKey(API_KEY)
-        .addView(view)
-        .setCallback(pickerCallback)
-        .build();
-      picker.setVisible(true);
-    }
-
-    function pickerCallback(data) {
-      if (data.action == google.picker.Action.PICKED) {
-        const output = document.getElementById('output');
-        output.innerHTML = "<h3>Google Drive Files:</h3>";
-        data.docs.forEach(file => {
-          output.innerHTML += `<p>${file.name} (ID: ${file.id})</p>`;
-        });
-      }
-    }
-
-    function launchDropboxChooser() {
+    document.getElementById('dropbox-button').addEventListener('click', function () {
       Dropbox.choose({
+        multiselect: false,
+        extensions: ['.pdf', '.docx', '.txt'],
         success: function(files) {
-          const output = document.getElementById('output');
-          output.innerHTML = "<h3>Dropbox Files:</h3>";
-          files.forEach(file => {
-            output.innerHTML += `<p><a href="${file.link}" target="_blank">${file.name}</a></p>`;
-          });
+          const file = files[0];
+          document.getElementById('dropbox-filename').innerText =
+            'আপনি নির্বাচিত করেছেন: ' + file.name + '\nURL: ' + file.link;
+
+          console.log("ড্রপবক্স ফাইল URL:", file.link);
         },
-        linkType: "preview",
-        multiselect: true,
-        extensions: ['.pdf', '.jpg', '.png'],
+        cancel: function() {
+          alert("আপনি কোনো ফাইল সিলেক্ট করেননি।");
+        }
       });
-    }
-
-    function handleLocalFile(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const output = document.getElementById('output');
-      output.innerHTML = `<h3>My Device File:</h3><p>${file.name} (${file.type})</p>`;
-    }
-
-    // Load GAPI Picker
-    gapiLoaded();
+    });
   </script>
 
 </body>
