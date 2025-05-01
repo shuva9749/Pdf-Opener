@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dropbox File Upload</title>
+  <style>
+    /* ===== Dropbox ফাইল আপলোডের CSS সেকশন ===== */
+    #dropbox-button {
+      background-color: #0061ff;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #dropbox-button:hover {
+      background-color: #004edc;
+    }
+
+    #dropbox-filename {
+      margin-top: 15px;
+      font-family: sans-serif;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Dropbox ফাইল আপলোডের HTML সেকশন ===== -->
+  <h2>Dropbox থেকে ফাইল নির্বাচন করুন</h2>
+  <button id="dropbox-button">Dropbox থেকে ফাইল নির্বাচন করুন</button>
+  <div id="dropbox-filename"></div>
+
+  <!-- Dropbox Chooser JS SDK লোড -->
+  <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="317alyycs84fbvu"></script>
+
+  <script>
+    // ===== Dropbox ফাইল আপলোডের JavaScript সেকশন =====
+
+    document.getElementById('dropbox-button').addEventListener('click', function () {
+      Dropbox.choose({
+        multiselect: false,
+        extensions: ['.pdf', '.docx', '.txt'],
+        success: function(files) {
+          const file = files[0];
+          document.getElementById('dropbox-filename').innerText =
+            'আপনি নির্বাচিত করেছেন: ' + file.name + '\nURL: ' + file.link;
+
+          console.log("ড্রপবক্স ফাইল URL:", file.link);
+        },
+        cancel: function() {
+          alert("আপনি কোনো ফাইল সিলেক্ট করেননি।");
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
