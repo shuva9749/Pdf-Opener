@@ -1,512 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Google Drive Picker</title>
+  <meta name="description" content="Select files from your Google Drive using the official file picker." />
+  <meta name="keywords" content="Google Drive, Dropbox, File Picker, PDF Viewer" />
+  <meta name="author" content="Your Name" />
 
-    <!-- SEO Meta Tags -->
-    <title>Super Advanced PDF Viewer - View & Manage PDFs Online</title>
-    <meta name="description" content="A powerful, user-friendly online PDF viewer. Select PDFs from your device, navigate pages, zoom, and enjoy a seamless reading experience. Fast and free!">
-    <meta name="keywords" content="pdf viewer, online pdf reader, view pdf, pdf document viewer, javascript pdf viewer, advanced pdf viewer, free pdf tool">
-    <meta name="robots" content="index, follow">
-    <!-- Add Open Graph/Twitter Card meta tags here for social sharing -->
-    <!-- <meta property="og:title" content="..."> -->
-    <!-- <meta property="og:description" content="..."> -->
-    <!-- <meta property="og:image" content="..."> -->
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
 
-    <!-- Favicon (Optional but recommended) -->
-    <!-- <link rel="icon" href="favicon.ico" type="image/x-icon"> -->
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-    <!-- External Stylesheets -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!-- Font Awesome for Icons -->
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-    <!-- Embedded CSS Styles -->
-    <style>
-        /* Basic Reset & Defaults */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #f0f4ff, #d2e3fc);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5; /* Light background */
-            color: #333;
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            font-size: 16px;
-        }
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
 
-        /* Header */
-        .viewer-header {
-            background: linear-gradient(135deg, #4a00e0, #8e2de2); /* Vibrant gradient */
-            color: #fff;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            flex-wrap: wrap; /* Allow wrapping */
-        }
+    header h1 {
+      color: #1a73e8;
+      font-size: 2rem;
+    }
 
-        .viewer-header h1 {
-            font-size: 1.8em;
-            margin: 0 0 10px 0; /* Add bottom margin for spacing when wrapped */
-            display: flex;
-            align-items: center;
-            flex-basis: 100%; /* Take full width initially */
-            justify-content: center; /* Center title */
-            text-align: center;
-        }
-        @media (min-width: 768px) { /* Adjust layout for larger screens */
-             .viewer-header h1 {
-                 flex-basis: auto; /* Allow title and ad to be side-by-side */
-                 margin-bottom: 0;
-                 justify-content: flex-start;
-             }
-        }
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
 
-        .viewer-header h1 i {
-            margin-right: 10px;
-            font-size: 1.2em; /* Adjust icon size relative to text */
-        }
+    .button-group button, .button-group label {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: background 0.3s, transform 0.2s;
+    }
 
-        /* Main Layout */
-        .viewer-main {
-            display: flex;
-            flex-grow: 1; /* Takes up remaining vertical space */
-            padding: 20px;
-            gap: 20px; /* Space between viewer and sidebar */
-            overflow: hidden; /* Prevent scrollbars on main container */
-            flex-wrap: wrap; /* Allow wrapping for responsiveness */
-        }
+    .button-group button:hover,
+    .button-group label:hover {
+      background-color: #0c5dc0;
+      transform: scale(1.03);
+    }
 
-        .viewer-container {
-            flex: 1; /* Takes up most space */
-            min-width: 300px; /* Ensure viewer doesn't get too small */
-            display: flex;
-            flex-direction: column;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            overflow: hidden; /* Important for containing the scrolling canvas */
-            order: 1; /* Display viewer first on mobile */
-        }
+    .button-group img {
+      height: 20px;
+    }
 
-        /* Toolbar */
-        .viewer-toolbar {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-            background-color: #f8f9fa; /* Light grey toolbar */
-            border-bottom: 1px solid #dee2e6;
-            flex-wrap: wrap; /* Allow wrapping on smaller screens */
-            gap: 8px;
-            justify-content: center; /* Center items when wrapped */
-        }
+    #content {
+      background-color: #ffffff;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 900px;
+      width: 100%;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
 
-        .toolbar-button, .file-input-label {
-            background-color: #6c757d; /* Bootstrap secondary color */
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-            font-size: 0.9em;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            white-space: nowrap; /* Prevent text wrapping inside buttons */
-        }
-        .toolbar-button:hover:not(:disabled), .file-input-label:hover {
-            background-color: #5a6268;
-        }
-        .toolbar-button:active:not(:disabled) {
-            transform: scale(0.95);
-        }
+    #my_device_input {
+      display: none;
+    }
 
-        .toolbar-button:disabled {
-            background-color: #adb5bd;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
+    canvas {
+      margin-top: 1rem;
+      max-width: 100%;
+      border: 1px solid #ccc;
+    }
 
-        .file-input-label {
-             background-color: #007bff; /* Primary color for action */
-        }
-        .file-input-label:hover {
-             background-color: #0056b3;
-        }
+    @media (max-width: 600px) {
+      .button-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
 
-        .toolbar-separator {
-            width: 1px;
-            height: 25px;
-            background-color: #ccc;
-            margin: 0 8px;
-            display: none; /* Hide by default, show on larger screens */
-        }
-        @media (min-width: 768px) {
-            .toolbar-separator {
-                display: inline-block;
-            }
-            .viewer-toolbar {
-                 justify-content: flex-start; /* Align left on larger screens */
-            }
-        }
-
-
-        .page-info, #zoom-level {
-            font-size: 0.9em;
-            color: #495057;
-            padding: 0 5px;
-            min-width: 80px; /* Prevent layout jumps */
-            text-align: center;
-            white-space: nowrap;
-        }
-        #zoom-level {
-            min-width: 50px;
-        }
-
-        /* Viewer Content Area */
-        .viewer-content {
-            flex-grow: 1;
-            position: relative; /* For absolute positioning of indicators */
-            overflow: auto; /* Enable scrolling for the PDF */
-            background-color: #e9ecef; /* Slightly darker background for contrast */
-            padding: 20px; /* Padding around the canvas */
-            display: flex; /* Use flex to center content */
-            justify-content: center; /* Center canvas horizontally */
-            align-items: flex-start; /* Align canvas to the top */
-            min-height: 400px; /* Ensure minimum height */
-        }
-
-        #pdf-viewer-area {
-             box-shadow: 0 0 15px rgba(0,0,0,0.2); /* Shadow around the rendered PDF */
-             margin-bottom: 20px; /* Add some space at the bottom */
-             /* Width/height set by JS */
-        }
-
-        #pdf-canvas {
-            display: block; /* Prevent extra space below canvas */
-            max-width: 100%; /* Ensure canvas doesn't overflow container */
-            height: auto; /* Maintain aspect ratio */
-            /* The actual width/height are set by JS */
-        }
-
-        /* Loading & Error Indicators */
-        .loading-indicator, .error-message, .drop-prompt {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 8px;
-            font-size: 1.2em;
-            z-index: 10;
-            text-align: center;
-            max-width: 90%;
-        }
-        .loading-indicator i {
-            margin-right: 10px;
-            font-size: 1.5em;
-        }
-
-        .error-message {
-            background-color: rgba(220, 53, 69, 0.8); /* Red for errors */
-        }
-
-        .drop-prompt {
-            background-color: rgba(0, 123, 255, 0.8); /* Blue for prompt */
-            padding: 30px 40px;
-            border: 2px dashed #fff;
-        }
-        .viewer-content.dragover .drop-prompt { /* Style when dragging over */
-             background-color: rgba(0, 100, 210, 0.9);
-             transform: translate(-50%, -50%) scale(1.05);
-        }
-
-
-        /* Sidebar */
-        .viewer-sidebar {
-            width: 100%; /* Full width on mobile */
-            max-width: 320px; /* Max width on larger screens */
-            flex-basis: 320px; /* Desired width */
-            flex-shrink: 0; /* Prevent sidebar from shrinking */
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            overflow-y: auto; /* Allow scrolling if content exceeds height */
-            margin: 0 auto; /* Center sidebar when it wraps below */
-            order: 2; /* Display sidebar second on mobile */
-        }
-        @media (min-width: 992px) { /* Adjust for larger screens */
-            .viewer-sidebar {
-                width: 320px; /* Fixed width */
-                margin: 0; /* Remove auto margins */
-            }
-            .viewer-main {
-                 flex-wrap: nowrap; /* Prevent wrapping */
-            }
-        }
-
-        .viewer-sidebar h2 {
-            font-size: 1.2em;
-            color: #4a00e0; /* Match header accent */
-            margin-bottom: 15px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 5px;
-            text-align: center;
-        }
-
-        /* Ad Spaces */
-        .ad-space {
-            background-color: #f0f0f0; /* Placeholder background */
-            border: 1px dashed #ccc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px; /* Spacing between ads/content */
-            overflow: hidden; /* Prevent ad content from breaking layout */
-            text-align: center;
-            color: #999;
-            width: 100%; /* Default to full width */
-        }
-        .ad-space .ad-placeholder { /* Style the placeholder text */
-            padding: 10px;
-            font-size: 0.9em;
-        }
-
-        .ad-banner-header {
-            min-height: 60px; /* Responsive height */
-            max-width: 728px; /* Standard banner width, but allow smaller */
-            margin: 10px auto 0; /* Center in header */
-            flex-grow: 1; /* Allow it to take space */
-            display: flex; /* Needed for centering placeholder */
-            align-items: center;
-            justify-content: center;
-        }
-         @media (min-width: 768px) {
-             .ad-banner-header {
-                 min-height: 90px; /* Standard banner height */
-                 margin: 0; /* Align with header items */
-             }
-         }
-        .ad-banner-header .ad-placeholder {
-            padding: 20px 10px;
-             @media (min-width: 768px) { padding: 30px 10px; }
-        }
-
-
-        .ad-sidebar {
-            min-height: 250px; /* Standard MPU height */
-            max-width: 300px; /* Standard MPU width */
-            margin-left: auto; /* Center within sidebar */
-            margin-right: auto;
-        }
-        .ad-sidebar .ad-placeholder {
-            padding: 100px 10px; /* More vertical padding for taller ads */
-        }
-
-
-        .ad-banner-footer {
-            min-height: 60px;
-            max-width: 728px;
-            margin: 10px auto;
-        }
-        .ad-banner-footer .ad-placeholder {
-             padding: 15px 10px;
-        }
-
-
-        /* Footer */
-        .viewer-footer {
-            background-color: #343a40; /* Dark footer */
-            color: #ccc;
-            text-align: center;
-            padding: 15px;
-            margin-top: auto; /* Pushes footer to the bottom */
-            font-size: 0.9em;
-            width: 100%; /* Ensure footer spans full width */
-        }
-        .viewer-footer p {
-            margin-bottom: 5px;
-        }
-
-        /* Responsive Adjustments (Simplified - more specific tweaks above) */
-        @media (max-width: 480px) {
-            body {
-                font-size: 14px;
-            }
-            .viewer-header h1 {
-                font-size: 1.4em;
-            }
-            .toolbar-button, .file-input-label {
-                padding: 6px 10px;
-                font-size: 0.85em;
-            }
-            .loading-indicator, .error-message, .drop-prompt {
-                padding: 15px 20px;
-                font-size: 1em;
-            }
-             .drop-prompt {
-                 padding: 20px 25px;
-             }
-        }
-    </style>
-
-    <!-- Google AdSense Integration -->
-    <!-- IMPORTANT: Replace 'YOUR_ADSENSE_PUBLISHER_ID' with your actual Publisher ID -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_ADSENSE_PUBLISHER_ID"
-     crossorigin="anonymous"></script>
-
+      .button-group button, .button-group label {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <h1>Google Drive File Picker</h1>
+  </header>
 
-    <header class="viewer-header">
-        <h1><i class="fas fa-file-pdf"></i> Super PDF Viewer</h1>
-        <!-- Ad Space 1: Header Banner -->
-        <div class="ad-space ad-banner-header">
-            <!-- Google AdSense Ad Unit Code Goes Here -->
-            <!-- Example: -->
-            <!--
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-YOUR_ADSENSE_PUBLISHER_ID"
-                 data-ad-slot="YOUR_AD_SLOT_ID_1"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
-            <script> (adsbygoogle = window.adsbygoogle || []).push({}); </script>
-            -->
-            <p class="ad-placeholder">[Header Ad Space - Responsive]</p>
-        </div>
-    </header>
+  <div class="button-group">
+    <button id="authorize_button" onclick="handleAuthClick()">
+      <img src="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png" alt="Drive Icon" />
+      Google Drive
+    </button>
+    <button id="signout_button" onclick="handleSignoutClick()">
+      <i class="fas fa-sign-out-alt"></i>
+      Sign Out
+    </button>
+    <label for="my_device_input">
+      <i class="fas fa-folder-open"></i>
+      My Device
+    </label>
+    <input type="file" id="my_device_input" accept="application/pdf" multiple onchange="handleLocalFiles(event)" />
+    <button onclick="launchDropboxChooser()">
+      <img src="https://www.dropbox.com/static/images/icons/favicon-vfl8lUR9B.ico" alt="Dropbox Icon" />
+      Dropbox
+    </button>
+  </div>
 
-    <main class="viewer-main">
-        <div class="viewer-container">
-            <div class="viewer-toolbar">
-                <label for="file-input" class="toolbar-button file-input-label" title="Open PDF File">
-                    <i class="fas fa-folder-open"></i> Open PDF
-                    <input type="file" id="file-input" accept=".pdf" hidden>
-                </label>
-                <div class="toolbar-separator"></div>
-                <button id="prev-page" class="toolbar-button" title="Previous Page" disabled>
-                    <i class="fas fa-arrow-left"></i> Prev
-                </button>
-                <div class="page-info">
-                    <span>Page:</span>
-                    <span id="page-num">0</span> / <span id="page-count">0</span>
-                </div>
-                <button id="next-page" class="toolbar-button" title="Next Page" disabled>
-                    Next <i class="fas fa-arrow-right"></i>
-                </button>
-                <div class="toolbar-separator"></div>
-                <button id="zoom-out" class="toolbar-button" title="Zoom Out" disabled>
-                    <i class="fas fa-search-minus"></i>
-                </button>
-                <span id="zoom-level">100%</span>
-                <button id="zoom-in" class="toolbar-button" title="Zoom In" disabled>
-                    <i class="fas fa-search-plus"></i>
-                </button>
-                 <button id="fit-page" class="toolbar-button" title="Fit Page" disabled>
-                    <i class="fas fa-expand-arrows-alt"></i> Fit Page
-                </button>
-                 <button id="fit-width" class="toolbar-button" title="Fit Width" disabled>
-                    <i class="fas fa-arrows-alt-h"></i> Fit Width
-                </button>
-            </div>
+  <div id="content"></div>
 
-            <div id="viewer-content" class="viewer-content">
-                <div id="loading-indicator" class="loading-indicator" style="display: none;">
-                    <i class="fas fa-spinner fa-spin"></i> Loading PDF...
-                </div>
-                <div id="error-message" class="error-message" style="display: none;"></div>
-                <div id="pdf-viewer-area" style="display: none;"> <!-- Hide initially -->
-                     <canvas id="pdf-canvas"></canvas>
-                </div>
-                 <p id="drop-prompt" class="drop-prompt">Click 'Open PDF' or drag & drop a PDF file here.</p>
-            </div>
-        </div>
+  <!-- PDF.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-        <!-- Ad Space 2: Sidebar -->
-        <aside class="viewer-sidebar">
-            <h2>Advertisement</h2>
-             <div class="ad-space ad-sidebar">
-                <!-- Google AdSense Ad Unit Code Goes Here -->
-                <!-- Example: -->
-                <!--
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="ca-pub-YOUR_ADSENSE_PUBLISHER_ID"
-                     data-ad-slot="YOUR_AD_SLOT_ID_2"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
-                <script> (adsbygoogle = window.adsbygoogle || []).push({}); </script>
-                -->
-                <p class="ad-placeholder">[Sidebar Ad Space - 300x250 or similar]</p>
-            </div>
-             <div class="ad-space ad-sidebar">
-                <!-- Another Ad Unit if needed -->
-                 <p class="ad-placeholder">[Sidebar Ad Space 2 - 300x250 or similar]</p>
-            </div>
-            <!-- You can add more content to the sidebar here if needed -->
-        </aside>
-    </main>
+  <!-- Google API Scripts -->
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
-    <footer class="viewer-footer">
-        <p>© <span id="current-year"></span> Your Website Name. All rights reserved.</p>
-        <!-- Optional: Add privacy policy/terms links -->
-         <!-- Ad Space 3: Footer Banner (Less common, but possible) -->
-         <div class="ad-space ad-banner-footer">
-            <!-- Google AdSense Ad Unit Code Goes Here -->
-             <p class="ad-placeholder">[Footer Ad Space - Optional]</p>
-        </div>
-    </footer>
+  <!-- Dropbox Chooser SDK -->
+  <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="317alyycs84fbvu"></script>
 
-    <!-- External JavaScript Libraries (PDF.js) - MUST be loaded before custom script -->
-    <!-- Make sure these files exist in the 'js' subfolder relative to this HTML file -->
-    <script src="js/pdf.min.js"></script>
-    <script src="js/pdf.worker.min.js"></script> <!-- Path used by pdf.min.js internally via workerSrc -->
-
-    <!-- Embedded Custom JavaScript Logic -->
-    <script>
-        'use strict';
-
-        // Ensure pdfjsLib is available
-        if (typeof pdfjsLib === 'undefined') {
-            alert('Error: PDF.js library not found or loaded after this script. Please ensure pdf.min.js is in the js/ folder and loaded before this script block.');
-            throw new Error('PDF.js library not found.');
-        }
-
-        // Set worker source - IMPORTANT: Path relative to the HTML file
-        // pdf.js looks for the worker file based on this path
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'js/pdf.worker.min.js';
-
-        // DOM Elements
-        const fileInput = document.getElementById('file-input');
-        const pdfViewerArea = document.getElementById('pdf-viewer-area');
-        const canvas = document.getElementById('pdf-canvas');
-        const loadingIndicator = document.getElementById('loading-indicator');
-        const errorMessage = document.getElementById('error-message');
-        const dropPrompt = document.getElementById('drop-prompt');
-        const prevPageButton = document.getElementById('prev-page');
-        const nextPageButton = document.getElementById('next-page');
-        const pageNumSpan = document.getElementById('page-num');
-        const pageCountSpan = document.getElementById('page-count');
-        const zoomOutButton = document.getElementById('zoom-out');
-        const zoomInButton = document.getElementById('zoom-in');
-        const zoomLevelSpan = document.getElementById('zoom-level');
-        const fitPageButton = document.getElementById('fit-page');
-        const fitWidthButton = document.getElementById('fit-width');
-        const viewerContent = document.getElementById('viewer-content'); // Container for scrolling and drag/drop
-
-        // State Variables
-        let pdfDoc = null;
-        let currentPageNum = 1;
-        
+  <!-- Dropbox Chooser Handler -->
+  <script>
+    function launchDropboxChooser() {
+      Dropbox.choose({
+        success: function(files) {
+          const contentDiv = document.getElementById('content');
+          contentDiv.innerHTML = "<strong>Selected Dropbox File(s):</strong><br/>";
+          files.forEach(file => {
+            contentDiv.innerHTML += `<p><strong>${file.name}</strong><br>Link: <a href="${file.link}" target="_blank">${file.link}</a></p>`;
+          });
+        },
+        cancel: function() {
+          console.log("Dropbox chooser canceled.");
+        },
+        linkType: "direct",
+        multiselect: true,
+        extensions: ['.pdf', '.png', '.jpg', '.jpeg']
+      });
+    }
+  </script>
+</body>
+</html>
