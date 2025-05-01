@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Google Drive Picker</title>
   <meta name="description" content="Select files from your Google Drive using the official file picker." />
-  <meta name="keywords" content="Google Drive, Dropbox, File Picker, PDF Viewer" />
+  <meta name="keywords" content="Google Drive, OneDrive, Dropbox, File Picker, PDF Viewer" />
   <meta name="author" content="Your Name" />
 
   <!-- Google Fonts -->
@@ -63,14 +63,36 @@
       transition: background 0.3s, transform 0.2s;
     }
 
+    .button-group button.onedrive-button {
+      background-color: #0078D4;
+    }
+
+    .button-group button.dropbox-button {
+      background-color: #0061FF;
+    }
+
     .button-group button:hover,
     .button-group label:hover {
       background-color: #0c5dc0;
       transform: scale(1.03);
     }
 
+    .button-group button.onedrive-button:hover {
+      background-color: #005A9E;
+    }
+
+    .button-group button.dropbox-button:hover {
+      background-color: #0047B3;
+    }
+
     .button-group img {
       height: 20px;
+    }
+
+    .button-group i {
+      font-size: 1.2em;
+      width: 20px;
+      text-align: center;
     }
 
     #content {
@@ -114,22 +136,32 @@
 
   <div class="button-group">
     <button id="authorize_button" onclick="handleAuthClick()">
-      <img src="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png" alt="Drive Icon" />
+      <img src="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png" alt="Google Drive Logo" />
       Google Drive
     </button>
+
+    <button class="onedrive-button">
+      <i class="fab fa-windows"></i>
+      OneDrive
+    </button>
+
+    <!-- Dropbox Button -->
+    <button class="dropbox-button" onclick="launchDropboxChooser()">
+      <img src="https://www.dropbox.com/static/images/icons/favicon-vfl8lUR9B.ico" alt="Dropbox Logo" />
+      Dropbox
+    </button>
+    <!-- End Dropbox Button -->
+
     <button id="signout_button" onclick="handleSignoutClick()">
       <i class="fas fa-sign-out-alt"></i>
       Sign Out
     </button>
+
     <label for="my_device_input">
       <i class="fas fa-folder-open"></i>
       My Device
     </label>
     <input type="file" id="my_device_input" accept="application/pdf" multiple onchange="handleLocalFiles(event)" />
-    <button onclick="launchDropboxChooser()">
-      <img src="https://www.dropbox.com/static/images/icons/favicon-vfl8lUR9B.ico" alt="Dropbox Icon" />
-      Dropbox
-    </button>
   </div>
 
   <div id="content"></div>
@@ -137,20 +169,16 @@
   <!-- PDF.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-  <!-- Google API Scripts -->
-  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
-
-  <!-- Dropbox Chooser SDK -->
+  <!-- Dropbox Chooser Script -->
   <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="317alyycs84fbvu"></script>
 
-  <!-- Dropbox Chooser Handler -->
+  <!-- Dropbox JavaScript Handler -->
   <script>
     function launchDropboxChooser() {
       Dropbox.choose({
         success: function(files) {
           const contentDiv = document.getElementById('content');
-          contentDiv.innerHTML = "<strong>Selected Dropbox File(s):</strong><br/>";
+          contentDiv.innerHTML = "<strong>Selected Dropbox Files:</strong><br/>";
           files.forEach(file => {
             contentDiv.innerHTML += `<p><strong>${file.name}</strong><br>Link: <a href="${file.link}" target="_blank">${file.link}</a></p>`;
           });
@@ -164,5 +192,12 @@
       });
     }
   </script>
+
+  <!-- Google API Scripts -->
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
+  <!-- Google Picker JavaScript (Unchanged) -->
+  <!-- JavaScript portion untouched as requested -->
 </body>
 </html>
