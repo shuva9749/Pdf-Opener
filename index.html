@@ -1,57 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Dropbox File Upload</title>
+  <title>Dropbox Chooser Integration</title>
+  <meta charset="UTF-8" />
   <style>
-    /* ===== Dropbox ফাইল আপলোডের CSS সেকশন ===== */
+    /* === CSS: Button Styling === */
     #dropbox-button {
-      background-color: #0061ff;
+      padding: 10px 20px;
+      background-color: #0061FF;
       color: white;
-      padding: 12px 20px;
       border: none;
-      border-radius: 6px;
-      cursor: pointer;
+      border-radius: 5px;
       font-size: 16px;
+      cursor: pointer;
     }
-
     #dropbox-button:hover {
-      background-color: #004edc;
+      background-color: #004dcc;
     }
-
-    #dropbox-filename {
-      margin-top: 15px;
-      font-family: sans-serif;
-      font-size: 14px;
+    #file-info {
+      margin-top: 20px;
+      font-family: Arial, sans-serif;
     }
   </style>
 </head>
 <body>
 
-  <!-- ===== Dropbox ফাইল আপলোডের HTML সেকশন ===== -->
-  <h2>Dropbox থেকে ফাইল নির্বাচন করুন</h2>
-  <button id="dropbox-button">Dropbox থেকে ফাইল নির্বাচন করুন</button>
-  <div id="dropbox-filename"></div>
+  <!-- === HTML: Dropbox Chooser Button === -->
+  <button id="dropbox-button">Choose PDF from Dropbox</button>
+  <div id="file-info"></div>
 
-  <!-- Dropbox Chooser JS SDK লোড -->
+  <!-- === JS: Dropbox Chooser Integration === -->
   <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="317alyycs84fbvu"></script>
-
   <script>
-    // ===== Dropbox ফাইল আপলোডের JavaScript সেকশন =====
-
-    document.getElementById('dropbox-button').addEventListener('click', function () {
+    document.getElementById("dropbox-button").addEventListener("click", function () {
       Dropbox.choose({
+        // Only allow selecting PDF files
+        extensions: ['.pdf'],
+        // Only allow selecting one file
         multiselect: false,
-        extensions: ['.pdf', '.docx', '.txt'],
-        success: function(files) {
+        // After selecting the file
+        success: function (files) {
           const file = files[0];
-          document.getElementById('dropbox-filename').innerText =
-            'আপনি নির্বাচিত করেছেন: ' + file.name + '\nURL: ' + file.link;
-
-          console.log("ড্রপবক্স ফাইল URL:", file.link);
+          document.getElementById("file-info").innerHTML = `
+            <strong>File Selected:</strong><br>
+            Name: ${file.name}<br>
+            Link: <a href="${file.link}" target="_blank">${file.link}</a>
+          `;
         },
-        cancel: function() {
-          alert("আপনি কোনো ফাইল সিলেক্ট করেননি।");
+        // When user cancels
+        cancel: function () {
+          alert("File selection cancelled.");
         }
       });
     });
