@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dropbox File Selector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Dropbox Chooser SDK -->
+  <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="317alyycs84fbvu"></script>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .card-img-top {
+      height: 200px;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <div class="container my-5">
+    <h1 class="text-center mb-4">Dropbox File Selector</h1>
+    <div class="text-center">
+      <button class="btn btn-primary" onclick="openDropboxChooser()">Select Files</button>
+    </div>
+
+    <div class="row mt-5" id="fileList"></div>
+  </div>
+
+  <script>
+    function openDropboxChooser() {
+      Dropbox.choose({
+        linkType: "direct",
+        multiselect: true,
+        success: function (files) {
+          const container = document.getElementById("fileList");
+          container.innerHTML = ""; // Clear previous results
+
+          files.forEach(file => {
+            const sizeKB = (file.bytes / 1024).toFixed(2);
+
+            const col = document.createElement("div");
+            col.className = "col-md-4 mb-4";
+
+            col.innerHTML = `
+              <div class="card h-100 shadow-sm">
+                <img src="${file.thumbnailLink || file.link}" class="card-img-top" alt="${file.name}">
+                <div class="card-body">
+                  <h5 class="card-title">${file.name}</h5>
+                  <p class="card-text"><strong>Size:</strong> ${sizeKB} KB</p>
+                  <a href="${file.link}" download="${file.name}" class="btn btn-success">Download</a>
+                </div>
+              </div>
+            `;
+
+            container.appendChild(col);
+          });
+        },
+        cancel: function () {
+          alert("File selection cancelled.");
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
