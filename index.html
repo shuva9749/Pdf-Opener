@@ -1,120 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Google Drive PDF Viewer</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Google API Loader -->
-  <script src="https://apis.google.com/js/api.js"></script>
-
-  <!-- ===== CSS Styling ===== -->
+  <meta charset="UTF-8" />
+  <title>Dropbox File Picker - Direct Link</title>
+  
+  <!-- ==== CSS ==== -->
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
       text-align: center;
-      padding: 50px;
+      margin-top: 50px;
+      background-color: #f9f9f9;
     }
 
-    h1 {
-      color: #333;
-    }
-
-    #pick-btn {
-      background-color: #4285f4;
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0061FF;
       color: white;
       border: none;
-      padding: 12px 24px;
-      font-size: 16px;
       border-radius: 5px;
       cursor: pointer;
     }
 
-    #pick-btn:hover {
-      background-color: #357ae8;
+    button:hover {
+      background-color: #004dc9;
     }
 
-    iframe {
+    ul {
+      list-style: none;
+      padding: 0;
       margin-top: 30px;
-      width: 100%;
-      height: 600px;
-      border: 1px solid #ccc;
+    }
+
+    li {
+      margin: 10px 0;
+    }
+
+    a {
+      text-decoration: none;
+      color: #333;
+    }
+
+    a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
-  <h1>Google Drive PDF Viewer</h1>
-  <button id="pick-btn">Select PDF from Google Drive</button>
-  <div id="file-content">
-    <iframe id="viewer" src="" style="display:none;"></iframe>
-  </div>
+  <!-- ==== HTML ==== -->
+  <h1>Dropbox File Picker</h1>
+  <button id="dropbox-picker">Open Dropbox Chooser</button>
+  <ul id="file-list"></ul>
 
-  <!-- ===== JavaScript Code ===== -->
+  <!-- Dropbox SDK -->
+  <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js"
+    id="dropboxjs" data-app-key="3l7z1yycs84fbvu"></script>
+
+  <!-- ==== JavaScript ==== -->
   <script>
-    const CLIENT_ID = "705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com";
-    const API_KEY = "AIzaSyAs1-yX51Kd5aKl-mB1oHhKXhOwCUDcPUY";
-    const SCOPES = ['https://www.googleapis.com/auth/drive.readonly'];
-    let pickerApiLoaded = false;
+    // Direct download link modifier
+    var at_dropbox = document.querySelectorAll('a[href*="dropbox.com"]');
+    Array.prototype.forEach.call(at_dropbox, function(element) {
+      element.href = element.href.replace("?dl=0", "?dl=1");
+    });
 
-    // Load the APIs
-    function loadApis() {
-      gapi.load('auth', { 'callback': onAuthApiLoad });
-      gapi.load('picker', { 'callback': onPickerApiLoad });
-    }
-
-    function onAuthApiLoad() {
-      gapi.auth.authorize(
-        {
-          client_id: CLIENT_ID,
-          scope: SCOPES,
-          immediate: false
+    // Dropbox file picker trigger
+    document.getElementById("dropbox-picker").addEventListener("click", function () {
+      Dropbox.choose({
+        linkType: "direct",
+        multiselect: true,
+        extensions: ['.pdf', '.mp4'],
+        folderselect: false,
+        success: function (files) {
+          const fileList = document.getElementById("file-list");
+          fileList.innerHTML = "";
+          files.forEach(function (file) {
+            const li = document.createElement("li");
+            const link = file.link.replace("?dl=0", "?dl=1"); // force direct download
+            li.innerHTML = `<a href="${link}" target="_blank">${file.name}</a>`;
+            fileList.appendChild(li);
+          });
         },
-        handleAuthResult
-      );
-    }
-
-    function onPickerApiLoad() {
-      pickerApiLoaded = true;
-    }
-
-    function handleAuthResult(authResult) {
-      if (authResult && !authResult.error) {
-        const oauthToken = authResult.access_token;
-        if (pickerApiLoaded) {
-          createPicker(oauthToken);
+        cancel: function () {
+          console.log("Dropbox picker canceled");
         }
-      }
-    }
-
-    function createPicker(oauthToken) {
-      const view = new google.picker.View(google.picker.ViewId.DOCS);
-      view.setMimeTypes("application/pdf");
-
-      const picker = new google.picker.PickerBuilder()
-        .enableFeature(google.picker.Feature.NAV_HIDDEN)
-        .setAppId("705204588232") // Optional, only if required
-        .setOAuthToken(oauthToken)
-        .addView(view)
-        .setDeveloperKey(API_KEY)
-        .setCallback(pickerCallback)
-        .build();
-      picker.setVisible(true);
-    }
-
-    function pickerCallback(data) {
-      if (data.action === google.picker.Action.PICKED) {
-        const file = data.docs[0];
-        const url = "https://drive.google.com/file/d/" + file.id + "/preview";
-        const viewer = document.getElementById("viewer");
-        viewer.src = url;
-        viewer.style.display = "block";
-      }
-    }
-
-    document.getElementById("pick-btn").addEventListener("click", loadApis);
+      });
+    });
   </script>
-
 </body>
 </html>
