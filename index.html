@@ -1,65 +1,119 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Dropbox File Selector</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Dropbox Chooser SDK -->
-  <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="317alyycs84fbvu"></script>
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Google Drive PDF Viewer</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Google API Loader -->
+  <script src="https://apis.google.com/js/api.js"></script>
+
+  <!-- ===== CSS Styling ===== -->
   <style>
-    .card-img-top {
-      height: 200px;
-      object-fit: cover;
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      text-align: center;
+      padding: 50px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #pick-btn {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #pick-btn:hover {
+      background-color: #357ae8;
+    }
+
+    iframe {
+      margin-top: 30px;
+      width: 100%;
+      height: 600px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
-<body class="bg-light">
+<body>
 
-  <div class="container my-5">
-    <h1 class="text-center mb-4">Dropbox File Selector</h1>
-    <div class="text-center">
-      <button class="btn btn-primary" onclick="openDropboxChooser()">Select Files</button>
-    </div>
-
-    <div class="row mt-5" id="fileList"></div>
+  <h1>Google Drive PDF Viewer</h1>
+  <button id="pick-btn">Select PDF from Google Drive</button>
+  <div id="file-content">
+    <iframe id="viewer" src="" style="display:none;"></iframe>
   </div>
 
+  <!-- ===== JavaScript Code ===== -->
   <script>
-    function openDropboxChooser() {
-      Dropbox.choose({
-        linkType: "direct",
-        multiselect: true,
-        success: function (files) {
-          const container = document.getElementById("fileList");
-          container.innerHTML = ""; // Clear previous results
+    const CLIENT_ID = "705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com";
+    const API_KEY = "AIzaSyAs1-yX51Kd5aKl-mB1oHhKXhOwCUDcPUY";
+    const SCOPES = ['https://www.googleapis.com/auth/drive.readonly'];
+    let pickerApiLoaded = false;
 
-          files.forEach(file => {
-            const sizeKB = (file.bytes / 1024).toFixed(2);
-
-            const col = document.createElement("div");
-            col.className = "col-md-4 mb-4";
-
-            col.innerHTML = `
-              <div class="card h-100 shadow-sm">
-                <img src="${file.thumbnailLink || file.link}" class="card-img-top" alt="${file.name}">
-                <div class="card-body">
-                  <h5 class="card-title">${file.name}</h5>
-                  <p class="card-text"><strong>Size:</strong> ${sizeKB} KB</p>
-                  <a href="${file.link}" download="${file.name}" class="btn btn-success">Download</a>
-                </div>
-              </div>
-            `;
-
-            container.appendChild(col);
-          });
-        },
-        cancel: function () {
-          alert("File selection cancelled.");
-        }
-      });
+    // Load the APIs
+    function loadApis() {
+      gapi.load('auth', { 'callback': onAuthApiLoad });
+      gapi.load('picker', { 'callback': onPickerApiLoad });
     }
+
+    function onAuthApiLoad() {
+      gapi.auth.authorize(
+        {
+          client_id: CLIENT_ID,
+          scope: SCOPES,
+          immediate: false
+        },
+        handleAuthResult
+      );
+    }
+
+    function onPickerApiLoad() {
+      pickerApiLoaded = true;
+    }
+
+    function handleAuthResult(authResult) {
+      if (authResult && !authResult.error) {
+        const oauthToken = authResult.access_token;
+        if (pickerApiLoaded) {
+          createPicker(oauthToken);
+        }
+      }
+    }
+
+    function createPicker(oauthToken) {
+      const view = new google.picker.View(google.picker.ViewId.DOCS);
+      view.setMimeTypes("application/pdf");
+
+      const picker = new google.picker.PickerBuilder()
+        .enableFeature(google.picker.Feature.NAV_HIDDEN)
+        .setAppId("705204588232") // Optional, only if required
+        .setOAuthToken(oauthToken)
+        .addView(view)
+        .setDeveloperKey(API_KEY)
+        .setCallback(pickerCallback)
+        .build();
+      picker.setVisible(true);
+    }
+
+    function pickerCallback(data) {
+      if (data.action === google.picker.Action.PICKED) {
+        const file = data.docs[0];
+        const url = "https://drive.google.com/file/d/" + file.id + "/preview";
+        const viewer = document.getElementById("viewer");
+        viewer.src = url;
+        viewer.style.display = "block";
+      }
+    }
+
+    document.getElementById("pick-btn").addEventListener("click", loadApis);
   </script>
 
 </body>
