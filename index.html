@@ -3,305 +3,202 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>File Picker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <title>PDF to JPG Converter</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
       margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(to bottom right, #c1decd, #c4dce2);
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       padding: 2rem;
-    }
-
-    header {
       text-align: center;
-      margin-bottom: 2rem;
     }
 
-    header h1 {
-      color: #000000;
-      font-weight: bold;
-      font-size: 3rem;
+    h1 {
+      margin-bottom: 1.5rem;
     }
 
     .button-group {
+      margin-bottom: 1.5rem;
       display: flex;
       gap: 1rem;
       flex-wrap: wrap;
       justify-content: center;
-      margin-bottom: 2rem;
     }
 
-    .button-group button,
-    .button-group label {
-      background-color: #1a73e8;
+    .button-group button, .button-group label {
+      background: #0061FF;
       color: white;
       border: none;
-      padding: 0.9rem 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
+      padding: 0.7rem 1.2rem;
       font-weight: bold;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: background 0.3s, transform 0.2s;
-    }
-
-    .button-group button.dropbox-button {
-      background-color: #0061FF;
-    }
-
-    .button-group button:hover,
-    .button-group label:hover {
-      background-color: #0c5dc0;
-      transform: scale(1.03);
-    }
-
-    .button-group button.dropbox-button:hover {
-      background-color: #004dc9;
-    }
-
-    .button-group i {
-      font-size: 1.5em;
-      width: 20px;
-      text-align: center;
-    }
-
-    #my_device_input,
-    #drop-file-input {
-      display: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
 
     .drop-area {
-      background-color: #c53597;
-      color: #ffffff;
-      font-size: 1.4rem;
-      border-radius: 12px;
-      border: 2px dotted rgb(255, 255, 255);
-      padding: 3rem;
-      text-align: center;
-      margin-bottom: 2rem;
-      max-width: 900px;
-      width: 100%;
-      transition: background-color 0.3s;
-      cursor: pointer;
+      background: #c53597;
+      padding: 2rem;
+      color: #fff;
       font-weight: bold;
+      border: 2px dashed white;
+      margin-bottom: 1rem;
+      cursor: pointer;
     }
 
-    .drop-area .pdf-note {
-      margin-top: 1rem;
-      font-size: 1.1rem;
-      font-weight: normal;
-    }
-
-    .drop-area.dragover {
-      background-color: #a31a78;
+    #canvas-area {
+      background: #1a73e8;
+      padding: 2rem;
+      display: none;
+      margin-top: 2rem;
+      border-radius: 10px;
     }
 
     .preview-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 1.5rem;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
     }
 
     canvas {
       max-width: 100%;
-      background-color: #b81371;
-      border: none;
-    }
-
-    .preview-wrapper img {
-      max-width: 100%;
-      margin-top: 1rem;
-      background-color: #444;
-      border: none;
     }
 
     .page-number {
-      text-align: center;
       font-weight: bold;
+      margin: 0.5rem 0;
+    }
+
+    .download-btn {
       margin-top: 0.5rem;
-      margin-bottom: 1.5rem;
-      color: #000000;
+      background: #28a745;
+      border: none;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 5px;
     }
 
-    .file-info {
-      font-weight: bold;
+    #download-all {
       margin-top: 1rem;
-      margin-bottom: 0.5rem;
-      color: #000000;
-    }
-
-    .file-separator {
-      width: 100%;
-      height: 10px;
-      background-color: black;
-      margin: 2rem 0;
-    }
-
-    @media (max-width: 600px) {
-      .button-group {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .button-group button,
-      .button-group label {
-        width: 100%;
-        justify-content: center;
-      }
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 20px;
-    }
-
-    ul li {
-      margin: 5px 0;
-    }
-
-    ul li a {
-      text-decoration: none;
-      color: #000000;
-    }
-
-    ul li a:hover {
-      text-decoration: underline;
+      background: #ff9800;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Select Your File & Upload Here</h1>
-  </header>
+
+  <h1>PDF to JPG Converter</h1>
 
   <div class="button-group">
-    <button id="authorize_button" onclick="handleAuthClick()">
-      <img src="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png" alt="Google Drive Logo" />
-      <strong>Google Drive</strong>
-    </button>
-    <button class="dropbox-button" id="dropbox-picker">
-      <i class="fab fa-dropbox"></i> <strong>Dropbox</strong>
-    </button>
-    <label for="my_device_input">
-      <i class="fas fa-folder-open"></i> <strong>My Device</strong>
-    </label>
-    <input type="file" id="my_device_input" accept="application/pdf,image/*" multiple onchange="handleLocalFiles(event)" />
+    <button id="authorize_button" onclick="handleAuthClick()"><i class="fab fa-google-drive"></i> Google Drive</button>
+    <button id="dropbox-picker"><i class="fab fa-dropbox"></i> Dropbox</button>
+    <label for="my_device_input"><i class="fas fa-folder-open"></i> My Device</label>
+    <input type="file" id="my_device_input" accept="application/pdf" style="display:none" onchange="handleLocalFiles(event)" />
   </div>
 
-  <div class="drop-area" id="drop-area">
-    Upload Your PDF File
-    <div class="pdf-note">Please Note: Only PDF File Are Accept Here</div>
+  <div class="drop-area" id="drop-area">Upload Your PDF File</div>
+  <input type="file" id="drop-file-input" accept="application/pdf" style="display:none" onchange="handleLocalFiles(event)" />
+
+  <div id="canvas-area">
+    <button id="download-all" class="download-btn">Download All as ZIP</button>
+    <div id="content"></div>
   </div>
-
-  <input type="file" id="drop-file-input" accept="application/pdf,image/*" multiple onchange="handleLocalFiles(event)" />
-
-  <div id="content"></div>
-  <ul id="file-list"></ul>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="3l7z1yycs84fbvu"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="3l7z1yycs84fbvu"></script>
   <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
   <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
   <script>
     const dropArea = document.getElementById("drop-area");
     const dropFileInput = document.getElementById("drop-file-input");
+    const canvasArea = document.getElementById("canvas-area");
+    const contentDiv = document.getElementById("content");
+    const allCanvases = [];
 
-    dropArea.addEventListener("click", () => {
-      dropFileInput.click();
-    });
-
-    dropArea.addEventListener("dragover", (e) => {
+    dropArea.addEventListener("click", () => dropFileInput.click());
+    dropArea.addEventListener("dragover", e => {
       e.preventDefault();
       dropArea.classList.add("dragover");
     });
-
-    dropArea.addEventListener("dragleave", () => {
-      dropArea.classList.remove("dragover");
-    });
-
-    dropArea.addEventListener("drop", (e) => {
+    dropArea.addEventListener("dragleave", () => dropArea.classList.remove("dragover"));
+    dropArea.addEventListener("drop", e => {
       e.preventDefault();
       dropArea.classList.remove("dragover");
       const files = e.dataTransfer.files;
-      for (const file of files) {
-        previewFile(file);
-      }
+      for (const file of files) previewPDF(file);
     });
 
-    function handleLocalFiles(event) {
-      const files = event.target.files;
-      for (const file of files) {
-        previewFile(file);
-      }
+    function handleLocalFiles(e) {
+      for (const file of e.target.files) previewPDF(file);
     }
 
-    function formatFileSize(bytes) {
-      return bytes >= 1024 * 1024
-        ? (bytes / (1024 * 1024)).toFixed(2) + ' MB'
-        : (bytes / 1024).toFixed(2) + ' KB';
-    }
-
-    function previewFile(file) {
-      const contentDiv = document.getElementById('content');
-      const wrapper = document.createElement('div');
-      wrapper.className = 'preview-wrapper';
-
-      const info = document.createElement('div');
-      info.className = 'file-info';
-      info.innerHTML = `File Name: ${file.name}<br>Type: ${file.type}<br>Size: ${formatFileSize(file.size)}`;
-      contentDiv.appendChild(info);
+    function previewPDF(file) {
+      contentDiv.innerHTML = '';
+      allCanvases.length = 0;
+      canvasArea.style.display = 'block';
 
       const reader = new FileReader();
       reader.onload = function () {
         const typedarray = new Uint8Array(reader.result);
-        if (file.type === 'application/pdf') {
-          pdfjsLib.getDocument({ data: typedarray }).promise.then(pdf => {
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-              pdf.getPage(pageNum).then(page => {
-                const scale = 1.3;
-                const viewport = page.getViewport({ scale });
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                page.render({ canvasContext: context, viewport: viewport });
-                wrapper.appendChild(canvas);
+        pdfjsLib.getDocument({ data: typedarray }).promise.then(async pdf => {
+          const pageNumbers = Array.from({ length: pdf.numPages }, (_, i) => i + 1);
+          for (const pageNum of pageNumbers) {
+            const page = await pdf.getPage(pageNum);
+            const viewport = page.getViewport({ scale: 2 });
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
 
-                const pageLabel = document.createElement('div');
-                pageLabel.className = 'page-number';
-                pageLabel.textContent = `${pageNum}/${pdf.numPages}`;
-                wrapper.appendChild(pageLabel);
-              });
-            }
-          });
-        } else if (file.type.startsWith('image/')) {
-          const img = document.createElement('img');
-          img.src = URL.createObjectURL(file);
-          wrapper.appendChild(img);
-        }
+            const wrapper = document.createElement('div');
+            wrapper.className = 'preview-wrapper';
+            wrapper.appendChild(canvas);
+
+            const pageLabel = document.createElement('div');
+            pageLabel.className = 'page-number';
+            pageLabel.textContent = `Page ${pageNum}`;
+            wrapper.appendChild(pageLabel);
+
+            const downloadBtn = document.createElement('button');
+            downloadBtn.textContent = "Download";
+            downloadBtn.className = 'download-btn';
+            downloadBtn.onclick = () => {
+              canvas.toBlob(blob => {
+                saveAs(blob, `page_${pageNum}.jpg`);
+              }, 'image/jpeg');
+            };
+            wrapper.appendChild(downloadBtn);
+
+            contentDiv.appendChild(wrapper);
+            allCanvases.push({ canvas, pageNum });
+          }
+        });
       };
       reader.readAsArrayBuffer(file);
-      contentDiv.appendChild(wrapper);
-
-      const separator = document.createElement('div');
-      separator.className = 'file-separator';
-      contentDiv.appendChild(separator);
     }
+
+    document.getElementById("download-all").addEventListener("click", () => {
+      const zip = new JSZip();
+      const folder = zip.folder("PDF_Pages");
+
+      const promises = allCanvases.map(({ canvas, pageNum }) => new Promise(resolve => {
+        canvas.toBlob(blob => {
+          folder.file(`page_${pageNum}.jpg`, blob);
+          resolve();
+        }, 'image/jpeg');
+      }));
+
+      Promise.all(promises).then(() => {
+        zip.generateAsync({ type: 'blob' }).then(content => {
+          saveAs(content, "All_Pages.zip");
+        });
+      });
+    });
 
     // Google Drive Integration
     const CLIENT_ID = '705204588232-3m2bivi6c0nd41lgpe7j34abim8s0gta.apps.googleusercontent.com';
@@ -350,7 +247,7 @@
 
     function createPicker() {
       const view = new google.picker.View(google.picker.ViewId.DOCS);
-      view.setMimeTypes('application/pdf,image/png,image/jpeg');
+      view.setMimeTypes('application/pdf');
       const picker = new google.picker.PickerBuilder()
         .enableFeature(google.picker.Feature.NAV_HIDDEN)
         .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
@@ -366,45 +263,32 @@
 
     async function pickerCallback(data) {
       if (data.action === google.picker.Action.PICKED) {
-        const contentDiv = document.getElementById('content');
-        contentDiv.innerHTML = '';
         for (const doc of data.docs) {
           const fileId = doc.id;
           const fileName = doc.name;
-          try {
-            const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-              headers: { Authorization: `Bearer ${accessToken}` }
-            });
-            const blob = await response.blob();
-            const file = new File([blob], fileName, { type: blob.type });
-            previewFile(file);
-          } catch (e) {
-            const error = document.createElement('p');
-            error.style.color = 'red';
-            error.textContent = 'Error loading file';
-            contentDiv.appendChild(error);
-          }
+          const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          });
+          const blob = await response.blob();
+          const file = new File([blob], fileName, { type: blob.type });
+          previewPDF(file);
         }
       }
     }
 
-    // Dropbox Integration
-    document.getElementById("dropbox-picker").addEventListener("click", function () {
+    // Dropbox
+    document.getElementById("dropbox-picker").addEventListener("click", () => {
       Dropbox.choose({
         linkType: "direct",
         multiselect: true,
-        extensions: ['.pdf', '.png', '.jpg', '.jpeg'],
-        folderselect: false,
+        extensions: ['.pdf'],
         success: function (files) {
-          files.forEach(async function (file) {
+          files.forEach(async (file) => {
             const response = await fetch(file.link.replace("?dl=0", "?raw=1"));
             const blob = await response.blob();
             const f = new File([blob], file.name, { type: blob.type });
-            previewFile(f);
+            previewPDF(f);
           });
-        },
-        cancel: function () {
-          console.log("Dropbox picker canceled");
         }
       });
     });
